@@ -1,0 +1,6 @@
+import React,{useState} from 'react';
+const pages=['Dashboard','Billing','Products & Stock','Purchases','Customers','Reports','Settings'];
+export default function App(){
+ const [page,setPage]=useState('Dashboard');
+ return <div className="layout"><aside><div className="logo">ZAHN<small>LUXURY PERFUMES</small></div><nav>{pages.map(p=><button key={p} className={p===page?'selected':''} onClick={()=>setPage(p)}>{p}</button>)}</nav><footer>ESSENCE OF YOU</footer></aside><main><div className="eyebrow">ZAHN / POINT OF SALE</div><h1>{page}</h1><div className="warning">Development preview only — no bills, purchases or stock changes are saved.</div><section className="hero"><div className="eyebrow">WELCOME TO ZAHN</div><h2>Luxury retail, beautifully managed.</h2><p>New POS workspace for Android tablets and laptops.</p></section><div className="stats">{['Sales Today','Orders','Products in Stock'].map(x=><article key={x}><span>{x}</span><strong>—</strong><small>Awaiting verified cloud integration</small></article>)}</div><section className="panel"><h2>{page} workspace</h2><p>This module is under development. Existing Supabase billing and purchase functions will be integrated after verification. No legacy backups or browser data will be imported.</p></section></main></div>;
+}
