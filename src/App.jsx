@@ -4,7 +4,9 @@ import {pinKey,isPin,hashPin,getPin} from './lib/devicePin.js';
 import Purchases from './components/Purchases.jsx';
 import Reports from './components/Reports.jsx';
 const pages=['Dashboard','Billing','Products & Stock','Purchases','Customers','Reports','Settings'];
-const liveEnabled=import.meta.env.VITE_ENABLE_LIVE_BILLING==='true';
+// Fail closed: environment toggles alone must never activate billing while VAT/compliance and backup are unverified.
+const liveEnabled=false; // Release gate: change only after verified backup, isolated restore, and compliant server RPC.
+
 const money=n=>Number(n||0).toFixed(2);
 
 export default function App(){
@@ -66,7 +68,7 @@ export default function App(){
   finally{setPinBusy(false)}
  }
  const authorized=!!staff&&!locked, cartItems=useMemo(()=>products.filter(p=>cart[p.id]>0).map(p=>({...p,quantity:cart[p.id]})),[products,cart]);
- const total=cartItems.reduce((sum,p)=>sum+p.quantity*Number(p.selling_price),0),taxable=Math.round(total/1.15*100)/100,vat=total-taxable;
+ const total=cartItems.reduce((sum,p)=>sum+p.quantity*Number(p.selling_price),0),taxable=total,vat=0; // Preview only; tax status not verified.
  const filtered=products.filter(p=>(p.name+' '+(p.sku||'')+' '+(p.brand||'')).toLowerCase().includes(search.toLowerCase()));
  function changeQty(p,delta){if(pending)return;setCart(c=>({...c,[p.id]:Math.max(0,Math.min(p.stock_quantity,(c[p.id]||0)+delta))}));}
  async function login(e){e.preventDefault();setBusy(true);setError('');try{const{error}=await supabase.auth.signInWithPassword({email,password});if(error)setError(error.message)}catch{setError('Connection failed')}finally{setBusy(false);setPassword('')}}
