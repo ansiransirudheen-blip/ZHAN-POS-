@@ -1,7 +1,8 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {supabase} from '../lib/supabase';
 import MixingPlanner from './MixingPlanner.jsx';
-const enabled=import.meta.env.VITE_ENABLE_LIVE_PURCHASES==='true';
+// Fail closed until backup, restore, inventory accounting and permissions are verified.
+const enabled=false;
 const money=n=>Number(n||0).toFixed(2);
 export default function Purchases({products,authorized,onPosted}){
  const [suppliers,setSuppliers]=useState([]),[supplier,setSupplier]=useState(''),[invoice,setInvoice]=useState(''),[items,setItems]=useState({}),[costs,setCosts]=useState({}),[pending,setPending]=useState(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
