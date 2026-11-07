@@ -1,8 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {webcrypto} from 'node:crypto';
 import {isPin,hashPin,getPin,pinKey} from '../src/lib/devicePin.js';
-globalThis.crypto=webcrypto;
 test('only six ASCII digits are accepted',()=>{
  for(const p of ['000000','123456','999999'])assert.equal(isPin(p),true);
  for(const p of ['12345','1234567','abcdef','12a456','１２３４５６',''])assert.equal(isPin(p),false);
