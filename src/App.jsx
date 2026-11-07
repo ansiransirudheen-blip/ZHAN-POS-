@@ -1,18 +1,11 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {supabase} from './lib/supabase';
+import {pinKey,isPin,hashPin,getPin} from './lib/devicePin.js';
 import Purchases from './components/Purchases.jsx';
 import Reports from './components/Reports.jsx';
 const pages=['Dashboard','Billing','Products & Stock','Purchases','Customers','Reports','Settings'];
 const liveEnabled=import.meta.env.VITE_ENABLE_LIVE_BILLING==='true';
 const money=n=>Number(n||0).toFixed(2);
-const pinKey=id=>'zahn-quick-pin:'+id;
-const isPin=p=>/^\d{6}$/.test(p);
-async function hashPin(pin,salt){
- const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);
- const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new Uint8Array(salt),iterations:310000,hash:'SHA-256'},key,256);
- return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('');
-}
-function getPin(id){try{const x=JSON.parse(localStorage.getItem(pinKey(id))||'null');return x?.salt?.length===16&&/^[a-f0-9]{64}$/.test(x.hash)?x:null}catch{return null}}
 
 export default function App(){
  const [pinMode,setPinMode]=useState('checking'),[pin,setPin]=useState(''),[pinAgain,setPinAgain]=useState(''),[pinError,setPinError]=useState(''),[pinTries,setPinTries]=useState(0),[pinBusy,setPinBusy]=useState(false);
