@@ -20,5 +20,6 @@ test('billing preview does not claim VAT-inclusive or 15% tax',()=>{
   assert.match(app,/Tax Registration|Tax registration|tax status unverified|Tax treatment unverified/i);
 });
 test('purchase posting stays guarded behind a separate release flag',()=>{
-  assert.match(purchases,/VITE_ENABLE_LIVE_PURCHASES/);
+  assert.match(purchases,/const enabled\s*=\s*false\s*;/);
+  assert.doesNotMatch(purchases,/const enabled\s*=\s*import\.meta\.env/);
 });
