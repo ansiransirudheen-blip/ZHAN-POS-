@@ -43,3 +43,22 @@
  #zahn-receipt h2{font-size:15px!important}
  #zahn-receipt h3{font-size:14px!important}
 }
+
+/* Public customer invoice: demo-only visual template; no customer data fetched. */
+.customer-invoice-page{min-height:100vh;background:#f6f3ed;padding:32px 16px;display:flex;justify-content:center;align-items:flex-start}
+.customer-invoice-card{background:#fff;color:#29251e;width:min(100%,560px);border:1px solid #e9e3d9;border-radius:18px;padding:30px;overflow-wrap:anywhere}
+.customer-invoice-card header{text-align:center;border-bottom:1px solid #e9e3d9;padding-bottom:20px}
+.customer-invoice-brand{font:42px Georgia,serif;letter-spacing:7px;margin:0}
+.customer-invoice-card header h1{font:27px Georgia,serif;margin:16px 0}
+.customer-invoice-demo{display:block;color:#8a4b18;font-size:12px}
+.customer-invoice-card dl>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee}
+.customer-invoice-card dt{color:#746c60}
+.customer-invoice-card dd{margin:0;text-align:right}
+.customer-invoice-card table{width:100%;table-layout:fixed;border-collapse:collapse;margin:22px 0;font-size:13px}
+.customer-invoice-card th,.customer-invoice-card td{text-align:left;padding:10px 3px;border-bottom:1px solid #eee;overflow-wrap:anywhere}
+.customer-invoice-card th:first-child{width:55%}
+.customer-invoice-card th:nth-child(2){width:13%}
+.customer-invoice-card th:last-child,.customer-invoice-card td:last-child{text-align:right}
+.customer-invoice-total{text-align:right;font-size:20px;font-weight:700}
+.customer-invoice-note{color:#746c60;font-size:12px}
+@media(max-width:500px){.customer-invoice-page{padding:12px}.customer-invoice-card{padding:18px}}
