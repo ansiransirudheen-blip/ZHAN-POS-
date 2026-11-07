@@ -76,3 +76,13 @@ test('tablet landscape does not horizontally overflow with receipt open',async({
  await expect(page.getByText('SAMPLE INVOICE — NOT A SALE')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);
 });
+
+test('WhatsApp sharing stays locked for demo invoice and never opens a chat',async({page})=>{
+ await page.goto('/');
+ await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
+ const share=page.getByRole('button',{name:'Share invoice on WhatsApp'});
+ await expect(share).toBeVisible();
+ await expect(share).toBeDisabled();
+ await expect(page.getByText('WhatsApp sharing is locked until a secure customer invoice link is issued by the server and live billing is approved. No message has been sent.')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Print receipt'})).toBeEnabled();
+});
