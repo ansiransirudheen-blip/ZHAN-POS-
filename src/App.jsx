@@ -29,18 +29,19 @@ export default function App(){
   return()=>{active=false;subscription.unsubscribe();};
  },[]);
  useEffect(()=>{let active=true;setProducts([]);setStaff(null);setCart({});setReceipt(null);setPending(null);
-  if(!supabase||!session?.user?.id)return;
+  if(!supabase||!session?.user?.id||pinMode!=='unlocked')return;
   (async()=>{setLoading(true);const [a,b]=await Promise.all([
     supabase.from('staff_profiles').select('role,is_active,display_name').eq('user_id',session.user.id).maybeSingle(),
     supabase.from('products').select('id,name,brand,sku,size_ml,selling_price,stock_quantity,low_stock_threshold').order('name')]);
     if(active){setStaff(a.error?null:a.data?.is_active?a.data:null);setProducts(b.error?[]:b.data||[]);setError(a.error?.message||b.error?.message||'');setLoading(false);}
   })();return()=>{active=false};
- },[session?.user?.id]);
+ },[session?.user?.id,pinMode]);
 
  useEffect(()=>{
   setPin('');setPinAgain('');setPinTries(0);setPinError('');
   setPinMode(session?.user?.id&&getPin(session.user.id)?'locked':'unlocked');
  },[session?.user?.id]);
+ // The PIN is a local convenience screen lock, not a server-side security boundary.
  const locked=!!session&&!recovery&&pinMode!=='unlocked';
  async function enrollPin(e){
   e.preventDefault();setPinError('');
