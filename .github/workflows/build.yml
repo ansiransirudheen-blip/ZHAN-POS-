@@ -19,5 +19,7 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Run PIN unit tests
+        run: npm test
       - name: Build frontend without production credentials
         run: npm run build
