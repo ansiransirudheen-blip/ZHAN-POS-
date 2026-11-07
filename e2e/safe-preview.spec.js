@@ -22,3 +22,17 @@ test('browser PIN hash and local storage roundtrip',async({page})=>{
  });
  expect(result).toEqual({valid:true,wrong:true,cleared:true});
 });
+
+test('sample invoice preview prints without saving a bill',async({page})=>{
+ await page.goto('/');
+ await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
+ await expect(page.getByText('SAMPLE RECEIPT — NOT A SALE')).toBeVisible();
+ await expect(page.getByText('DEMO ONLY — NOT A TAX INVOICE. No sale or payment was recorded.')).toBeVisible();
+ await expect(page.getByText('Total: SAR 115.00')).toBeVisible();
+ await page.evaluate(()=>{window.__printCalled=false;window.print=()=>{window.__printCalled=true}});
+ await page.getByRole('button',{name:'Print receipt'}).click();
+ expect(await page.evaluate(()=>window.__printCalled)).toBe(true);
+ await page.getByRole('button',{name:'New bill'}).click();
+ await expect(page.getByText('SAMPLE RECEIPT — NOT A SALE')).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Save bill'})).toHaveCount(0);
+});
