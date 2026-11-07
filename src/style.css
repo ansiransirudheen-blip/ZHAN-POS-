@@ -18,3 +18,28 @@
   .receipt-paper table{table-layout:fixed;overflow-wrap:anywhere}
   .receipt-paper th:first-child{width:55%}
 }
+
+/* Receipt preview: tablet-friendly controls and resilient 80 mm thermal output. */
+.receipt-panel{min-width:0}
+.receipt-paper{overflow-wrap:anywhere;word-break:normal}
+.receipt-paper table{table-layout:fixed}
+.receipt-paper th:first-child{width:56%}
+.receipt-paper th:nth-child(2){width:14%;text-align:center}
+.receipt-paper td:nth-child(2){text-align:center}
+.receipt-paper th:last-child{width:30%}
+.receipt-actions{flex-wrap:wrap}
+.receipt-actions button{min-height:44px;text-align:center}
+@media(min-width:701px) and (max-width:1100px){
+ .receipt-paper{width:min(100%,420px)}
+ .receipt-actions button{min-width:145px}
+}
+@media print{
+ @page{size:80mm auto;margin:3mm}
+ html,body{width:80mm!important;margin:0!important;padding:0!important;background:#fff!important}
+ #zahn-receipt{width:74mm!important;box-sizing:border-box!important;overflow:visible!important;font-size:11px!important;line-height:1.35!important}
+ #zahn-receipt table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
+ #zahn-receipt th,#zahn-receipt td{overflow-wrap:anywhere!important;padding:3px 1px!important}
+ #zahn-receipt tr{break-inside:avoid}
+ #zahn-receipt h2{font-size:15px!important}
+ #zahn-receipt h3{font-size:14px!important}
+}
