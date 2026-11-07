@@ -26,14 +26,14 @@ test('browser PIN hash and local storage roundtrip',async({page})=>{
 test('sample invoice preview prints without saving a bill',async({page})=>{
  await page.goto('/');
  await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
- await expect(page.getByText('SAMPLE RECEIPT — NOT A SALE')).toBeVisible();
- await expect(page.getByText('DEMO ONLY — NOT A TAX INVOICE. No sale or payment was recorded.')).toBeVisible();
+ await expect(page.getByText('SAMPLE INVOICE — NOT A SALE')).toBeVisible();
+ await expect(page.getByText('DEMO ONLY — NOT A VALID INVOICE. No VAT charged. No sale or payment was recorded.')).toBeVisible();
  await expect(page.getByText('Total: SAR 115.00')).toBeVisible();
  await page.evaluate(()=>{window.__printCalled=false;window.print=()=>{window.__printCalled=true}});
  await page.getByRole('button',{name:'Print receipt'}).click();
  expect(await page.evaluate(()=>window.__printCalled)).toBe(true);
  await page.getByRole('button',{name:'New bill'}).click();
- await expect(page.getByText('SAMPLE RECEIPT — NOT A SALE')).toHaveCount(0);
+ await expect(page.getByText('SAMPLE INVOICE — NOT A SALE')).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Save bill'})).toHaveCount(0);
 });
 
@@ -49,6 +49,6 @@ test('iPhone-sized viewport has accessible navigation and no horizontal overflow
  expect(metrics.content).toBeLessThanOrEqual(metrics.viewport);
  expect(metrics.navigationButtons).toBe(true);
  await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
- await expect(page.getByText('SAMPLE RECEIPT — NOT A SALE')).toBeVisible();
+ await expect(page.getByText('SAMPLE INVOICE — NOT A SALE')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
