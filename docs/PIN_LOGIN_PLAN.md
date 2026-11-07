@@ -24,4 +24,7 @@ A React-only PIN check, PIN in localStorage, or an anonymous RPC that merely ret
 - Never import legacy browser data.
 
 ## Outstanding dependency
-The existing admin cannot currently authenticate and password recovery hit an email rate limit. A safe PIN enrollment bootstrap requires proof of admin ownership and an approved recovery/provisioning procedure. PIN-only UI cannot safely solve this by itself.
+Admin password reset and email/password login have now succeeded. First enrollment can therefore require a fresh authenticated admin session. Confirm whether the requested experience is (A) PIN quick-unlock on an already authenticated trusted device or (B) true PIN-only sign-in after sign-out/on a new device. Option B requires a reviewed server-side session issuance design. No PIN is enrolled yet.
+
+## Deployment status (2026-11-07)
+This file is a design specification only; PIN login has NOT been implemented or enabled. Production database and existing login are unchanged. Build/test in staging and request explicit approval for production schema/auth changes.
