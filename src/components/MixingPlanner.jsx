@@ -1,9 +1,18 @@
 import React,{useState} from 'react';
+const DRAFT_KEY='zahn-recipe-drafts-v1';
+const readDrafts=()=>{try{const v=JSON.parse(localStorage.getItem(DRAFT_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}};
 const n=v=>Number(v)||0;
 const money=v=>Number(v).toFixed(2);
 export default function MixingPlanner(){
  const [liters,setLiters]=useState('1'),[price,setPrice]=useState('800'),[existingMl,setExistingMl]=useState('0'),[existingAvg,setExistingAvg]=useState('0');
  const [size,setSize]=useState('10'),[oil,setOil]=useState('5'),[liquidUnit,setLiquidUnit]=useState('0.10'),[bottle,setBottle]=useState('2'),[packing,setPacking]=useState('0.50'),[quantity,setQuantity]=useState('1'),[mode,setMode]=useState('made-to-order');
+ const [recipeName,setRecipeName]=useState(''),[drafts,setDrafts]=useState(readDrafts),[draftMessage,setDraftMessage]=useState('');
+ function saveDraft(){if(!valid||!recipeName.trim()){setDraftMessage('Enter a recipe name and valid quantities first.');return}
+ const recipe={id:crypto.randomUUID(),name:recipeName.trim().slice(0,100),mode,sizeMl:n(size),oilMl:n(oil),liquidMl:n(size)-n(oil),liquidCostPerMl:n(liquidUnit),bottleCost:n(bottle),packingCost:n(packing),savedAt:new Date().toISOString()};
+ try{const next=[...drafts,recipe];localStorage.setItem(DRAFT_KEY,JSON.stringify(next));setDrafts(next);setDraftMessage('Draft saved on this device only. Export JSON to keep a backup.')}catch{setDraftMessage('Could not save draft on this device.')}
+ }
+ function removeDraft(id){try{const next=drafts.filter(x=>x.id!==id);localStorage.setItem(DRAFT_KEY,JSON.stringify(next));setDrafts(next);setDraftMessage('Local draft removed.')}catch{setDraftMessage('Could not remove draft.')}}
+ function exportDrafts(){const blob=new Blob([JSON.stringify({format:'zahn-recipe-drafts-v1',recipes:drafts},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='zahn-recipe-drafts.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
  const boughtMl=n(liters)*1000,available=existingMl===''?0:n(existingMl),totalMl=boughtMl+available;
  const avg=totalMl>0?(available*n(existingAvg)+n(price))/totalMl:0;
  const valid=[liters,price,existingMl,existingAvg,size,oil,liquidUnit,bottle,packing,quantity].every(x=>x!==''&&Number.isFinite(Number(x))&&Number(x)>=0)&&n(size)>0&&n(oil)<=n(size)&&Number.isInteger(n(quantity))&&n(quantity)>0;
@@ -14,6 +23,8 @@ export default function MixingPlanner(){
  <h3>Mixing recipe</h3><label>Production mode<select value={mode} onChange={e=>setMode(e.target.value)}><option value="made-to-order">Mix when customer orders</option><option value="pre-made">Prepare bottles in advance</option></select></label>
  <div className="billing"><label>Bottle size (mL)<input type="number" min="0.001" step="0.1" value={size} onChange={e=>setSize(e.target.value)}/></label><label>Oil per bottle (mL)<input type="number" min="0" step="0.1" value={oil} onChange={e=>setOil(e.target.value)}/></label><label>Mixing liquid cost / mL (SAR)<input type="number" min="0" step="0.01" value={liquidUnit} onChange={e=>setLiquidUnit(e.target.value)}/></label><label>Empty bottle cost (SAR)<input type="number" min="0" step="0.01" value={bottle} onChange={e=>setBottle(e.target.value)}/></label><label>Packaging cost per bottle (SAR)<input type="number" min="0" step="0.01" value={packing} onChange={e=>setPacking(e.target.value)}/></label><label>Number of bottles<input type="number" min="1" step="1" value={quantity} onChange={e=>setQuantity(e.target.value)}/></label></div>
  {!valid?<p role="alert">Enter valid non-negative costs, whole-number bottle quantity, and oil volume not exceeding bottle size.</p>:<><p>Cost per bottle: <strong>SAR {money(unitCost)}</strong> · Total cost: <strong>SAR {money(unitCost*n(quantity))}</strong></p><p>Planned consumption: <strong>{usedOil.toFixed(2)} mL oil</strong>, {usedLiquid.toFixed(2)} mL mixing liquid, {n(quantity)} bottles.</p>{usedOil>totalMl&&<p role="alert">Planned oil use exceeds the entered available oil.</p>}</>}
+ <h3>Save recipe draft (this device only)</h3><p>Draft recipes are stored in this browser only, not in Supabase. They do not sync to other devices or change stock. Export a JSON copy for safekeeping.</p><label>Recipe / fragrance name<input value={recipeName} maxLength={100} onChange={e=>setRecipeName(e.target.value)} placeholder="e.g. Oud 10 mL"/></label><button type="button" disabled={!valid||!recipeName.trim()} onClick={saveDraft}>Save recipe draft locally</button> <button type="button" disabled={!drafts.length} onClick={exportDrafts}>Export recipe drafts JSON</button>{draftMessage&&<p role="status">{draftMessage}</p>}
+ {drafts.length>0&&<div><h3>Saved drafts ({drafts.length})</h3>{drafts.map(d=><div className="product" key={d.id}><div><strong>{d.name}</strong><small>{d.sizeMl} mL bottle · {d.oilMl} mL oil · {d.liquidMl} mL liquid · {d.mode==='pre-made'?'Pre-made':'Made to order'}</small></div><button type="button" onClick={()=>removeDraft(d.id)}>Remove</button></div>)}</div>}
  <p>{mode==='made-to-order'?'Made-to-order: deduct ingredients and one empty bottle only when a confirmed bill is posted.':'Pre-made: deduct ingredients and empty bottles when production is confirmed; later sales deduct finished bottles only.'}</p>
  <small>Costs are examples entered here, not live inventory values. Actual stock and average cost must be calculated server-side before enabling posting.</small></section>;
 }
