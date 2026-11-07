@@ -36,3 +36,19 @@ test('sample invoice preview prints without saving a bill',async({page})=>{
  await expect(page.getByText('SAMPLE RECEIPT — NOT A SALE')).toHaveCount(0);
  await expect(page.getByRole('button',{name:'Save bill'})).toHaveCount(0);
 });
+
+test('iPhone-sized viewport has accessible navigation and no horizontal overflow',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/');
+ await expect(page.getByRole('button',{name:'Settings'})).toBeVisible();
+ const metrics=await page.evaluate(()=>({
+  viewport:document.documentElement.clientWidth,
+  content:document.documentElement.scrollWidth,
+  navigationButtons:[...document.querySelectorAll('nav button')].every(b=>{const r=b.getBoundingClientRect();return r.width>=44&&r.left>=0&&r.right<=innerWidth})
+ }));
+ expect(metrics.content).toBeLessThanOrEqual(metrics.viewport);
+ expect(metrics.navigationButtons).toBe(true);
+ await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
+ await expect(page.getByText('SAMPLE RECEIPT — NOT A SALE')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
