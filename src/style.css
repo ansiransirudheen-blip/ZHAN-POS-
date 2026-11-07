@@ -62,3 +62,6 @@
 .customer-invoice-total{text-align:right;font-size:20px;font-weight:700}
 .customer-invoice-note{color:#746c60;font-size:12px}
 @media(max-width:500px){.customer-invoice-page{padding:12px}.customer-invoice-card{padding:18px}}
+
+.customer-invoice-logo{display:block;width:min(100%,280px);height:auto;margin:0 auto 12px;object-fit:contain}
+.customer-invoice-logo[hidden],.customer-invoice-brand[hidden]{display:none}
