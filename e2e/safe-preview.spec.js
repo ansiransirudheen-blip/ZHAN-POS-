@@ -86,3 +86,13 @@ test('WhatsApp sharing stays locked for demo invoice and never opens a chat',asy
  await expect(page.getByText('WhatsApp sharing is locked until a secure customer invoice link is issued by the server and live billing is approved. No message has been sent.')).toBeVisible();
  await expect(page.getByRole('button',{name:'Print receipt'})).toBeEnabled();
 });
+
+test('customer invoice visual preview shows only sample data on mobile',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await page.goto('/invoice-preview');
+ await expect(page.getByRole('heading',{name:'Invoice preview'})).toBeVisible();
+ await expect(page.getByText('DEMO ONLY — NOT A VALID INVOICE')).toBeVisible();
+ await expect(page.getByText('Real customer invoice links are not enabled. This page contains sample data only.')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Save bill'})).toHaveCount(0);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
