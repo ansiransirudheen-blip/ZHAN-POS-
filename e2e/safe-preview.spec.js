@@ -52,3 +52,27 @@ test('iPhone-sized viewport has accessible navigation and no horizontal overflow
  await expect(page.getByText('SAMPLE INVOICE — NOT A SALE')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+test('Samsung tablet-sized viewport shows preview and print controls without overflow',async({page})=>{
+ await page.setViewportSize({width:800,height:1280});
+ await page.goto('/');
+ await expect(page.getByRole('button',{name:'Settings'})).toBeVisible();
+ await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
+ await expect(page.getByRole('heading',{name:'Total: SAR 115.00',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Print receipt'})).toBeVisible();
+ const metrics=await page.evaluate(()=>({
+  viewport:document.documentElement.clientWidth,
+  content:document.documentElement.scrollWidth,
+  printButton:(()=>{const r=document.querySelector('.receipt-actions button')?.getBoundingClientRect();return !!r&&r.width>=44&&r.left>=0&&r.right<=innerWidth})()
+ }));
+ expect(metrics.content).toBeLessThanOrEqual(metrics.viewport);
+ expect(metrics.printButton).toBe(true);
+});
+
+test('tablet landscape does not horizontally overflow with receipt open',async({page})=>{
+ await page.setViewportSize({width:1280,height:800});
+ await page.goto('/');
+ await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
+ await expect(page.getByText('SAMPLE INVOICE — NOT A SALE')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(1280);
+});
