@@ -28,7 +28,7 @@ test('sample invoice preview prints without saving a bill',async({page})=>{
  await page.getByRole('button',{name:'Preview sample receipt (no sale saved)'}).click();
  await expect(page.getByText('SAMPLE INVOICE — NOT A SALE')).toBeVisible();
  await expect(page.getByText('DEMO ONLY — NOT A VALID INVOICE. No VAT charged. No sale or payment was recorded.')).toBeVisible();
- await expect(page.getByText('Total: SAR 115.00')).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Total: SAR 115.00',exact:true})).toBeVisible();
  await page.evaluate(()=>{window.__printCalled=false;window.print=()=>{window.__printCalled=true}});
  await page.getByRole('button',{name:'Print receipt'}).click();
  expect(await page.evaluate(()=>window.__printCalled)).toBe(true);
