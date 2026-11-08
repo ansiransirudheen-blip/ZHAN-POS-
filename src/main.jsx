@@ -1,1 +1,12 @@
-import React from 'react';import{createRoot}from'react-dom/client';import App from './App.jsx';import CustomerInvoicePreview from './components/CustomerInvoicePreview.jsx';import CustomerInvoiceUnavailable from './components/CustomerInvoiceUnavailable.jsx';import './style.css';const path=window.location.pathname;const invoicePreview=path==='/invoice-preview';const customerInvoice=path==='/i'||path.startsWith('/i/');createRoot(document.getElementById('root')).render(<React.StrictMode>{invoicePreview?<CustomerInvoicePreview/>:customerInvoice?<CustomerInvoiceUnavailable/>:<App/>}</React.StrictMode>);
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import App from './App.jsx';
+import CustomerInvoicePreview from './components/CustomerInvoicePreview.jsx';
+import CustomerInvoiceUnavailable from './components/CustomerInvoiceUnavailable.jsx';
+import WorkflowDemo from './components/WorkflowDemo.jsx';
+import './style.css';
+const path=window.location.pathname;
+const invoicePreview=path==='/invoice-preview';
+const customerInvoice=path==='/i'||path.startsWith('/i/');
+const workflowDemo=path==='/workflow-demo';
+createRoot(document.getElementById('root')).render(<React.StrictMode>{workflowDemo?<WorkflowDemo/>:invoicePreview?<CustomerInvoicePreview/>:customerInvoice?<CustomerInvoiceUnavailable/>:<App/>}</React.StrictMode>);
