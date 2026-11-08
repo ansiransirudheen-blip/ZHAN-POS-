@@ -13,7 +13,7 @@ export const INVOICE_RESPONSE_HEADERS=Object.freeze({
 export function resolveCustomerInvoice({token,tokenRecord,invoice,now=new Date()}){
  const denied={status:404,headers:INVOICE_RESPONSE_HEADERS,body:{error:'Invoice unavailable'}};
  if(!verifyInvoiceToken(token,tokenRecord,now)) return denied;
- if(!invoice||invoice.id!==tokenRecord.invoice_id||invoice.status!=='committed') return denied;
+ if(!invoice||invoice.id!==tokenRecord.invoice_id||invoice.status!=='completed') return denied;
  // Explicit public field allowlist: never return customer phone, staff, cost,
  // internal notes, payment metadata, or any extra database fields.
  const {invoice_number,issued_at,currency,subtotal,vat_amount,total}=invoice;
