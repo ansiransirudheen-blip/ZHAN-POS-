@@ -113,3 +113,12 @@ test('uploaded original ZAHN logo loads in customer invoice preview',async({page
  await expect(page.locator('.customer-invoice-brand')).toBeHidden();
  await expect(page.getByText('DEMO ONLY — NOT A VALID INVOICE')).toBeVisible();
 });
+
+test('unverified customer invoice link fails closed without exposing invoice details',async({page})=>{
+ await page.goto('/i/invalid-or-unissued-token');
+ await expect(page.getByRole('heading',{name:'Invoice unavailable'})).toBeVisible();
+ await expect(page.getByText('No invoice details or customer information are displayed.')).toBeVisible();
+ await expect(page.getByText('DEMO-0001')).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Save bill'})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Share invoice on WhatsApp'})).toHaveCount(0);
+});
