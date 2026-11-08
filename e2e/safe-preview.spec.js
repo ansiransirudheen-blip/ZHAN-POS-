@@ -96,3 +96,11 @@ test('customer invoice visual preview shows only sample data on mobile',async({p
  await expect(page.getByRole('button',{name:'Save bill'})).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+test('invoice header falls back to ZAHN text when original logo asset is unavailable',async({page})=>{
+ await page.route('**/zahn-original-logo.jpg',route=>route.fulfill({status:404,body:''}));
+ await page.goto('/invoice-preview');
+ await expect(page.getByRole('heading',{name:'Invoice preview'})).toBeVisible();
+ await expect(page.locator('.customer-invoice-brand')).toBeVisible();
+ await expect(page.getByText('DEMO ONLY — NOT A VALID INVOICE')).toBeVisible();
+});
