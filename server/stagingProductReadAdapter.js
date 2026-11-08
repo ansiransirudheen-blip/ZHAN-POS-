@@ -15,7 +15,7 @@ export function createStagingProductReadAdapter({client}={}){
        typeof row.sku!=='string'||!row.sku||!SIZES.has(row.size_ml)||
        !Number.isSafeInteger(row.stock_quantity)||row.stock_quantity<0||
        !Number.isSafeInteger(row.low_stock_threshold)||row.low_stock_threshold<0||
-       !/^(0|[1-9]\\d*)(\\.\\d{1,2})?$/.test(String(row.selling_price)))
+       !/^(0|[1-9]\d*)(\.\d{1,2})?$/.test(String(row.selling_price)))
       throw new Error('Invalid staging product record');
     return Object.freeze({id:row.id,name:row.name,brand:typeof row.brand==='string'?row.brand:null,
      size_ml:row.size_ml,sku:row.sku,selling_price:String(row.selling_price),
