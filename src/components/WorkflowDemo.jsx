@@ -39,7 +39,7 @@ export default function WorkflowDemo(){
  }
  function addStock(id){
   const q=Number(purchaseQty),cost=Number(purchaseCost);
-  if(!Number.isSafeInteger(q)||q<=0||q>100000||!Number.isFinite(cost)||cost<0||!/^\\d+(?:\\.\\d{1,2})?$/.test(purchaseCost)){
+  if(!Number.isSafeInteger(q)||q<=0||q>100000||!Number.isFinite(cost)||cost<0||!/^\d+(?:\.\d{1,2})?$/.test(purchaseCost)){
    setNotice('Enter valid purchase quantity and cost per unit.');return;
   }
   const product=products.find(p=>p.id===id);
