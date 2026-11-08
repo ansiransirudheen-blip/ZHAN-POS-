@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createCustomerInvoiceBrandedPdf} from '../server/customerInvoiceBrandedPdf.js';
 const authorized={status:200,body:{invoice_number:'ZHN-001',issued_at:'2026-11-08T10:00:00Z',currency:'SAR',subtotal:100,vat_amount:0,total:100,customer_phone:'SECRET'}};
 function fakeJpeg(){
- const a=Buffer.alloc(120,0);a[0]=255;a[1]=216;a[2]=255;a[3]=192;a.writeUInt16BE(17,4);a[6]=8;a.writeUInt16BE(100,7);a.writeUInt16BE(200,9);a[11]=3;a[119]=217;a[118]=255;return a;
+ const a=Buffer.alloc(120,0);a[0]=255;a[1]=216;a[2]=255;a[3]=192;a.writeUInt16BE(17,4);a[6]=8;a.writeUInt16BE(100,7);a.writeUInt16BE(200,9);a[11]=3;a[21]=255;a[22]=218;a[119]=217;a[118]=255;return a;
 }
 test('embeds exact JPEG bytes in a PDF image object',()=>{
  const jpeg=fakeJpeg(),r=createCustomerInvoiceBrandedPdf(authorized,jpeg);
