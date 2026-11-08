@@ -8,7 +8,7 @@ test('handler resolves only hash-bound invoice with minimal public fields',async
  const calls=[];
  const handler=createCustomerInvoiceHandler({
   async lookupTokenByHash(h){calls.push(['token',h]);return h===hash?{token_hash:hash,invoice_id:'i1',expires_at:'2030-01-01T00:00:00Z',revoked_at:null}:null},
-  async lookupInvoiceById(id){calls.push(['invoice',id]);return {id:'i1',status:'committed',invoice_number:'ZHN-1',issued_at:'2026-11-08T10:00:00Z',currency:'SAR',subtotal:100,vat_amount:15,total:115,customer_phone:'PRIVATE'}}
+  async lookupInvoiceById(id){calls.push(['invoice',id]);return {id:'i1',status:'completed',invoice_number:'ZHN-1',issued_at:'2026-11-08T10:00:00Z',currency:'SAR',subtotal:100,vat_amount:15,total:115,customer_phone:'PRIVATE'}}
  });
  const r=await handler({method:'GET',token,now:new Date('2026-11-08')});
  assert.equal(r.status,200);
