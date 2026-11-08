@@ -1,0 +1,51 @@
+name: Manual encrypted production backup
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Verify backup secrets are configured
+        env:
+          DB_URL: ${{ secrets.ZAHN_PRODUCTION_DATABASE_URL }}
+          ENC_PASSWORD: ${{ secrets.ZAHN_BACKUP_ENCRYPTION_PASSWORD }}
+        run: |
+          if [ -z "$DB_URL" ] || [ -z "$ENC_PASSWORD" ]; then
+            echo "::error::Missing required repository secrets"; exit 1
+          fi
+          if [ "${#ENC_PASSWORD}" -lt 24 ]; then
+            echo "::error::Backup encryption password must be at least 24 characters"; exit 1
+          fi
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+      - name: Export and encrypt production database
+        env:
+          DB_URL: ${{ secrets.ZAHN_PRODUCTION_DATABASE_URL }}
+          ENC_PASSWORD: ${{ secrets.ZAHN_BACKUP_ENCRYPTION_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p backup-output
+          # pg_dump is read-only; do not print the connection string or dump.
+          pg_dump --dbname="$DB_URL" --format=custom --no-owner --no-acl --file=production.dump
+          test -s production.dump
+          pg_restore --list production.dump >/dev/null
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -in production.dump -out backup-output/zahn-production.dump.enc \
+            -pass env:ENC_PASSWORD
+          sha256sum backup-output/zahn-production.dump.enc > backup-output/SHA256SUMS.txt
+          rm -f production.dump
+          echo "Encrypted backup generated and local dump format checked."
+          echo "Restore verification is still required. Do not deploy production."
+      - name: Upload encrypted backup only
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahn-encrypted-production-backup
+          path: backup-output/
+          if-no-files-found: error
+          retention-days: 1
