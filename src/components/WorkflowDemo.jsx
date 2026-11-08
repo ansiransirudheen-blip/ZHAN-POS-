@@ -15,6 +15,10 @@ export default function WorkflowDemo(){
  const [discount,setDiscount]=useState('0');
  const [history,setHistory]=useState([]);
  const [view,setView]=useState('Staff');
+ const [stockHistory,setStockHistory]=useState([]);
+ const [supplier,setSupplier]=useState('');
+ const [purchaseQty,setPurchaseQty]=useState('1');
+ const [purchaseCost,setPurchaseCost]=useState('');
  const demoRevenue=history.reduce((sum,b)=>sum+b.total,0);
  const demoDiscounts=history.reduce((sum,b)=>sum+b.discount,0);
  const total=useMemo(()=>products.reduce((s,p)=>s+(cart[p.id]||0)*p.price,0),[products,cart]);
@@ -27,12 +31,21 @@ export default function WorkflowDemo(){
  function addProduct(e){
   e.preventDefault();const p=Number(price),q=Number(qty);
   if(!name.trim()||!Number.isFinite(p)||p<=0||!Number.isSafeInteger(q)||q<0){setNotice('Enter valid product, price and stock.');return}
-  setProducts(old=>[...old,{id:crypto.randomUUID(),name:name.trim(),size:Number(size),price:p,stock:q}]);
+  const product={id:crypto.randomUUID(),name:name.trim(),size:Number(size),price:p,stock:q};
+  setProducts(old=>[...old,product]);
+  if(q>0)setStockHistory(old=>[...old,{id:crypto.randomUUID(),product:product.name,kind:'Opening stock',quantity:q,at:new Date().toLocaleString()}]);
   setName('');setPrice('');setQty('1');setNotice('Demo product created in temporary memory.');
  }
  function addStock(id){
-  setProducts(old=>old.map(p=>p.id===id?{...p,stock:p.stock+1}:p));
-  setNotice('Demo purchase: stock increased by one.');
+  const q=Number(purchaseQty),cost=Number(purchaseCost);
+  if(!Number.isSafeInteger(q)||q<=0||q>100000||!Number.isFinite(cost)||cost<0||!/^\\d+(?:\\.\\d{1,2})?$/.test(purchaseCost)){
+   setNotice('Enter valid purchase quantity and cost per unit.');return;
+  }
+  const product=products.find(p=>p.id===id);
+  if(!product||product.stock+q>1000000){setNotice('Invalid stock update.');return}
+  setProducts(old=>old.map(p=>p.id===id?{...p,stock:p.stock+q}:p));
+  setStockHistory(old=>[...old,{id:crypto.randomUUID(),product:product.name,kind:'Purchase',quantity:q,cost, supplier:supplier.trim()||'Not specified',at:new Date().toLocaleString()}]);
+  setNotice('Demo purchase posted to temporary stock history.');
  }
  function addCart(p){
   if(receipt)return;
@@ -43,11 +56,12 @@ export default function WorkflowDemo(){
   if(!items.length||!validDiscount){setNotice('Check cart and discount.');return}
   if(items.some(p=>p.quantity>p.stock)){setNotice('Insufficient demo stock.');return}
   setProducts(old=>old.map(p=>({...p,stock:p.stock-(cart[p.id]||0)})));
+  setStockHistory(old=>[...old,...items.map(p=>({id:crypto.randomUUID(),product:p.name,kind:'Sale',quantity:-p.quantity,at:new Date().toLocaleString()}))]);
   const bill={number:'DEMO-'+Date.now(),items,subtotal:total,discount:discountValue,total:payable,created:new Date().toLocaleString()};
   setReceipt(bill);setHistory(old=>[...old,bill]);
   setCart({});setDiscount('0');setNotice('Demo invoice created. No real sale was saved.');
  }
- function reset(){setProducts([]);setCart({});setReceipt(null);setDiscount('0');setHistory([]);setView('Staff');setNotice('Demo reset. All temporary data cleared.')}
+ function reset(){setProducts([]);setCart({});setReceipt(null);setDiscount('0');setHistory([]);setStockHistory([]);setSupplier('');setPurchaseQty('1');setPurchaseCost('');setView('Staff');setNotice('Demo reset. All temporary data cleared.')}
  return <div style={{minHeight:'100vh',background:'#11110f',color:'#f4e8c7',padding:'20px 14px',fontFamily:'system-ui,sans-serif'}}>
   <div style={{maxWidth:680,margin:'auto'}}>
    <header style={{textAlign:'center',paddingBottom:20}}><h1 style={{color:'#d7b56c',marginBottom:4}}>ZAHN</h1><div>ESSENCE OF YOU</div><h2>POS Workflow Demo</h2><p style={{color:'#f1cf7b'}}>TEST ONLY · No cloud connection · No VAT or tax invoice</p></header>
@@ -58,10 +72,21 @@ export default function WorkflowDemo(){
     <label>Price (SAR)<input style={field} type="number" min="0.01" step="0.01" value={price} onChange={e=>setPrice(e.target.value)} required/></label>
     <label>Opening stock<input style={field} type="number" min="0" step="1" value={qty} onChange={e=>setQty(e.target.value)} required/></label>
     <button style={button}>Add demo product</button></form></section>
-   <section style={panel}><h3>2. Demo purchase & stock</h3>{products.length===0?<p>Add a product first.</p>:products.map(p=><div key={p.id} style={{padding:'12px 0',borderBottom:'1px solid #50452e'}}><strong>{p.name} · {p.size} ml</strong><div>{sar(p.price)} · Stock: {p.stock}</div><button style={{...button,marginTop:8}} onClick={()=>addStock(p.id)}>+1 demo stock</button></div>)}</section>
+   <section style={panel}><h3>2. Demo purchase & stock</h3>
+    <div style={{display:'grid',gap:10}}>
+     <label>Supplier (optional)<input style={field} value={supplier} onChange={e=>setSupplier(e.target.value)} placeholder="Demo supplier"/></label>
+     <label>Purchase quantity<input style={field} type="number" min="1" step="1" value={purchaseQty} onChange={e=>setPurchaseQty(e.target.value)}/></label>
+     <label>Unit purchase cost (SAR)<input style={field} type="number" min="0" step="0.01" value={purchaseCost} onChange={e=>setPurchaseCost(e.target.value)} placeholder="0.00"/></label>
+    </div>
+    {products.length===0?<p>Add a product first.</p>:products.map(p=><div key={p.id} style={{padding:'12px 0',borderBottom:'1px solid #50452e'}}>
+     <strong>{p.name} · {p.size} ml</strong><div>{sar(p.price)} · Stock: {p.stock} {p.stock<=3?'⚠️ Low stock':''}</div>
+     <button style={{...button,marginTop:8}} onClick={()=>addStock(p.id)}>Post demo purchase</button>
+    </div>)}
+   </section>
    <section style={panel}><h3>3. Demo billing</h3>{products.map(p=><div key={p.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,padding:'10px 0'}}><span>{p.name} · Available {p.stock} · Cart {cart[p.id]||0}</span><button style={button} disabled={!!receipt||p.stock<=(cart[p.id]||0)} onClick={()=>addCart(p)}>Add</button></div>)}<label>Discount (SAR)<input style={field} type="number" min="0" max={total} step="0.01" value={discount} onChange={e=>setDiscount(e.target.value)}/></label><p>Subtotal: {sar(total)} · Discount: {validDiscount?sar(discountValue):'Invalid'}</p><p><strong>Payable: {sar(payable)}</strong></p><p style={{fontSize:13}}>Preview amount only. VAT treatment has not been verified.</p><button style={button} disabled={!total||!!receipt||!validDiscount} onClick={checkout}>Create demo invoice</button></section>
    {receipt&&<section id="demo-print-receipt" style={{...panel,background:'#fff',color:'#222'}}><h3>ZAHN · DEMO INVOICE</h3><p>{receipt.number} · {receipt.created}</p>{receipt.items.map(p=><p key={p.id}>{p.name} {p.size}ml × {p.quantity} — {sar(p.price*p.quantity)}</p>)}<hr/><p>Subtotal: {sar(receipt.subtotal)} · Discount: {sar(receipt.discount)}</p><strong>Total: {sar(receipt.total)}</strong><p>TEST ONLY — Not a tax invoice or proof of purchase.</p><div className="demo-print-hide" style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:12}}><button style={button} onClick={()=>window.print()}>Print / Save PDF</button><button style={button} onClick={()=>{const msg=['ZAHN POS — DEMO ONLY','Not a valid invoice or proof of purchase',receipt.number,...receipt.items.map(p=>p.name+' '+p.size+'ml x '+p.quantity+' — '+sar(p.price*p.quantity)),'Discount: '+sar(receipt.discount),'Demo total: '+sar(receipt.total)].join('\n');window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener,noreferrer')}}>WhatsApp demo text</button><button style={button} onClick={()=>setReceipt(null)}>Close preview</button></div></section>}
    {view==='Admin'&&<section style={panel}><h3>4. Demo Sales Report</h3><p>Bills: {history.length} · Gross: {sar(history.reduce((n,b)=>n+b.subtotal,0))}</p><p>Discounts: {sar(demoDiscounts)} · Net sales: {sar(demoRevenue)}</p>{history.length===0?<p>No demo bills yet.</p>:history.map(b=><p key={b.number}>{b.number} · {b.created} · {sar(b.total)}</p>)}<p style={{fontSize:12}}>Temporary session-only report. No VAT, profit or real accounting figures.</p></section>}
+   <section style={panel}><h3>5. Demo Stock History</h3>{stockHistory.length===0?<p>No stock movements yet.</p>:stockHistory.slice().reverse().map(m=><p key={m.id}>{m.at} · {m.product} · {m.kind} {m.quantity>0?'+':''}{m.quantity}{m.kind==='Purchase'?' · '+m.supplier+' · Cost '+sar(m.cost):''}</p>)}<p style={{fontSize:12}}>In-memory demonstration only. Not a real purchasing ledger.</p></section>
    <style>{'@media print {body{background:white!important}body *{visibility:hidden!important}#demo-print-receipt,#demo-print-receipt *{visibility:visible!important}#demo-print-receipt{position:absolute!important;left:0;top:0;width:100%!important;border:0!important;box-sizing:border-box!important}.demo-print-hide,.demo-print-hide *{display:none!important}}'}</style>
    <p role="status" aria-live="polite">{notice}</p><button style={{...button,background:'#49413a',color:'white'}} onClick={reset}>Reset all demo data</button>
    <p style={{fontSize:12,opacity:.75}}>All data disappears when this page reloads. Nothing is saved to Supabase, localStorage or a real invoice.</p>
