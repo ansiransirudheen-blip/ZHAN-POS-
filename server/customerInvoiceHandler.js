@@ -3,6 +3,7 @@
 // using a trusted server connection with narrowly scoped permissions.
 import {hashInvoiceToken} from './invoiceTokens.js';
 import {resolveCustomerInvoice,INVOICE_RESPONSE_HEADERS} from './customerInvoicePolicy.js';
+import {mapCompletedSaleToCustomerInvoice} from './saleInvoiceMapper.js';
 
 const unavailable=()=>({status:404,headers:INVOICE_RESPONSE_HEADERS,body:{error:'Invoice unavailable'}});
 export function createCustomerInvoiceHandler(adapter){
@@ -17,7 +18,7 @@ export function createCustomerInvoiceHandler(adapter){
    const tokenRecord=await adapter.lookupTokenByHash(hash);
    if(!tokenRecord||!tokenRecord.invoice_id) return unavailable();
    const invoice=await adapter.lookupInvoiceById(tokenRecord.invoice_id);
-   return resolveCustomerInvoice({token,tokenRecord,invoice,now:request.now||new Date()});
+   return resolveCustomerInvoice({token,tokenRecord,invoice:mapCompletedSaleToCustomerInvoice(invoice),now:request.now||new Date()});
   }catch{
    // Do not leak internal DB errors or distinguish missing/invalid links.
    return unavailable();
