@@ -1,21 +1,20 @@
-// Server-only Supabase query adapter for a FUTURE ISOLATED STAGING DATABASE.
-// No connection is created here; do not import into Vite, use browser keys,
-// or pass a production client. Private token table does not exist yet.
-// Inject an already authenticated, server-only, least-privilege client.
+// Server-only, NON-DEPLOYED staging adapter.
+// Supabase Data API should NOT expose the private token schema.
+// Token lookup is injected from a separate trusted, parameterized Postgres
+// repository with least-privilege private-schema access.
+// Sales lookup uses an injected server-only Supabase client; no credentials here.
 import {createInvoiceReadAdapter} from './invoiceReadAdapter.js';
 
-export function createStagingSupabaseInvoiceAdapter({client,tokenTable='invoice_access_tokens'}={}){
- if(!client||typeof client.schema!=='function'||typeof client.from!=='function')
-  throw new TypeError('Server-only Supabase client required');
- if(tokenTable!=='invoice_access_tokens') throw new TypeError('Unexpected token table');
+export function createStagingSupabaseInvoiceAdapter({salesClient,privateTokenRepository}={}){
+ if(!salesClient||typeof salesClient.from!=='function'||
+    !privateTokenRepository||typeof privateTokenRepository.findTokenByHash!=='function')
+  throw new TypeError('Trusted server-only repositories required');
  return createInvoiceReadAdapter({
   async findTokenByHash(hash,columns){
-   const {data,error}=await client.schema('private').from(tokenTable).select(columns).eq('token_hash',hash).maybeSingle();
-   if(error) throw new Error('Private token lookup failed');
-   return data;
+   return privateTokenRepository.findTokenByHash(hash,columns);
   },
   async findSaleById(id,columns){
-   const {data,error}=await client.from('sales').select(columns).eq('id',id).maybeSingle();
+   const {data,error}=await salesClient.from('sales').select(columns).eq('id',id).maybeSingle();
    if(error) throw new Error('Sale lookup failed');
    return data;
   }
