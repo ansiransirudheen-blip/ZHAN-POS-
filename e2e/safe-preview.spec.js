@@ -104,3 +104,12 @@ test('invoice header falls back to ZAHN text when original logo asset is unavail
  await expect(page.locator('.customer-invoice-brand')).toBeVisible();
  await expect(page.getByText('DEMO ONLY — NOT A VALID INVOICE')).toBeVisible();
 });
+
+test('uploaded original ZAHN logo loads in customer invoice preview',async({page})=>{
+ await page.goto('/invoice-preview');
+ const logo=page.getByRole('img',{name:'ZAHN Luxury Perfumes — Essence of You'});
+ await expect(logo).toBeVisible();
+ await expect.poll(()=>logo.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+ await expect(page.locator('.customer-invoice-brand')).toBeHidden();
+ await expect(page.getByText('DEMO ONLY — NOT A VALID INVOICE')).toBeVisible();
+});
