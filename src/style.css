@@ -1,3 +1,67 @@
 :root{font-family:Arial,sans-serif;background:#f6f3ed;color:#29251e}*{box-sizing:border-box}body{margin:0}.layout{display:flex;min-height:100vh}aside{background:#171610;color:#f7e8cb;width:245px;padding:30px 18px;display:flex;flex-direction:column;flex-shrink:0}.logo{font:32px Georgia,serif;letter-spacing:4px;margin:10px 15px 40px}.logo small{display:block;font:10px Arial;letter-spacing:2px;color:#c9ab78;margin-top:7px}nav{display:grid;gap:8px}button{border:0;border-radius:9px;background:transparent;color:#c9c0ad;padding:14px;text-align:left;cursor:pointer;font:inherit}.selected,button:hover{background:#383126;color:#ffe0a3}footer{margin-top:auto;color:#bd9f6b;font-size:11px;letter-spacing:2px;padding:15px}main{padding:40px;flex:1;min-width:0}.eyebrow{font-size:11px;letter-spacing:2px;color:#b69a67}h1{font:38px Georgia,serif}.warning{background:#fff4d9;border:1px solid #e3cc95;border-radius:10px;padding:15px;margin-bottom:24px}.hero{background:#29251e;color:#fff5df;border-radius:16px;padding:40px}.hero h2{font:36px Georgia,serif;max-width:560px}.hero p{color:#c8bbab}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}.stats article,.panel{background:white;border:1px solid #e9e3d9;border-radius:14px;padding:24px}.stats span,.stats small{display:block;color:#82796c;font-size:13px}.stats strong{display:block;font:38px Georgia,serif;margin:15px 0}.panel h2{font:26px Georgia,serif}.panel p{color:#746c60;line-height:1.7}@media(max-width:700px){.layout{display:block}aside{width:100%;padding:15px}.logo{margin:0 0 14px}nav{display:flex;overflow-x:auto}nav button{white-space:nowrap;padding:10px;font-size:12px}footer{display:none}main{padding:22px 15px}.hero{padding:25px}.hero h2{font-size:28px}.stats{grid-template-columns:1fr}}
 .signin{display:grid;gap:14px;max-width:380px}.signin label,.billing label{display:grid;gap:6px;margin:12px 0;font-size:13px}input,select{width:100%;padding:11px;border:1px solid #d4c9b7;border-radius:8px;background:#fff;font:inherit}.submit{background:#28231b;color:#fff;padding:12px 18px;margin:6px 0}.submit:disabled,button:disabled{opacity:.45;cursor:not-allowed}.billing{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(270px,1fr);gap:18px}.product{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #e9e3d9}.product small{display:block;color:#807565;margin-top:5px}.product button{background:#e9e1d2;color:#28231b}.qty{display:flex;align-items:center;gap:9px}.qty button{padding:8px 12px}@media(max-width:850px){.billing{grid-template-columns:1fr}}
 .receipt-paper{max-width:420px;background:#fff;color:#222;padding:24px;margin:16px auto;border:1px solid #ddd;font:13px/1.5 system-ui,sans-serif}.receipt-paper header{text-align:center;border-bottom:1px dashed #999;margin-bottom:16px}.receipt-paper header h2{font-size:17px;margin:0}.receipt-paper table{width:100%;border-collapse:collapse;margin:15px 0}.receipt-paper th,.receipt-paper td{padding:6px 2px;border-bottom:1px solid #ddd;text-align:left}.receipt-paper th:last-child,.receipt-paper td:last-child{text-align:right}.receipt-paper h3{text-align:right}.receipt-actions{display:flex;gap:12px;justify-content:center}@media print{@page{size:80mm auto;margin:3mm}body *{visibility:hidden!important}#zahn-receipt,#zahn-receipt *{visibility:visible!important}#zahn-receipt{position:absolute;left:0;top:0;width:74mm;max-width:none;margin:0;padding:0;border:0;box-shadow:none;color:#000;background:#fff}.receipt-actions{display:none!important}}
+
+/* Mobile-first usability fixes for narrow iPhone screens. */
+@media(max-width:700px){
+  aside{padding:14px 12px}
+  nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;overflow:visible}
+  nav button{white-space:normal;overflow-wrap:anywhere;min-height:44px;text-align:center;padding:10px 5px;font-size:12px}
+  main{padding:20px 12px}
+  .panel,.stats article{padding:18px}
+  .panel h2{font-size:23px}
+  .hero{padding:22px}
+  .hero h2{font-size:26px}
+  .product{flex-wrap:wrap;overflow-wrap:anywhere}
+  .receipt-paper{max-width:100%;padding:14px;overflow-wrap:anywhere}
+  .receipt-actions{flex-wrap:wrap}
+  .receipt-paper table{table-layout:fixed;overflow-wrap:anywhere}
+  .receipt-paper th:first-child{width:55%}
+}
+
+/* Receipt preview: tablet-friendly controls and resilient 80 mm thermal output. */
+.receipt-panel{min-width:0}
+.receipt-paper{overflow-wrap:anywhere;word-break:normal}
+.receipt-paper table{table-layout:fixed}
+.receipt-paper th:first-child{width:56%}
+.receipt-paper th:nth-child(2){width:14%;text-align:center}
+.receipt-paper td:nth-child(2){text-align:center}
+.receipt-paper th:last-child{width:30%}
+.receipt-actions{flex-wrap:wrap}
+.receipt-actions button{min-height:44px;text-align:center}
+@media(min-width:701px) and (max-width:1100px){
+ .receipt-paper{width:min(100%,420px)}
+ .receipt-actions button{min-width:145px}
+}
+@media print{
+ @page{size:80mm auto;margin:3mm}
+ html,body{width:80mm!important;margin:0!important;padding:0!important;background:#fff!important}
+ #zahn-receipt{width:74mm!important;box-sizing:border-box!important;overflow:visible!important;font-size:11px!important;line-height:1.35!important}
+ #zahn-receipt table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
+ #zahn-receipt th,#zahn-receipt td{overflow-wrap:anywhere!important;padding:3px 1px!important}
+ #zahn-receipt tr{break-inside:avoid}
+ #zahn-receipt h2{font-size:15px!important}
+ #zahn-receipt h3{font-size:14px!important}
+}
+
+/* Public customer invoice: demo-only visual template; no customer data fetched. */
+.customer-invoice-page{min-height:100vh;background:#f6f3ed;padding:32px 16px;display:flex;justify-content:center;align-items:flex-start}
+.customer-invoice-card{background:#fff;color:#29251e;width:min(100%,560px);border:1px solid #e9e3d9;border-radius:18px;padding:30px;overflow-wrap:anywhere}
+.customer-invoice-card header{text-align:center;border-bottom:1px solid #e9e3d9;padding-bottom:20px}
+.customer-invoice-brand{font:42px Georgia,serif;letter-spacing:7px;margin:0}
+.customer-invoice-card header h1{font:27px Georgia,serif;margin:16px 0}
+.customer-invoice-demo{display:block;color:#8a4b18;font-size:12px}
+.customer-invoice-card dl>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee}
+.customer-invoice-card dt{color:#746c60}
+.customer-invoice-card dd{margin:0;text-align:right}
+.customer-invoice-card table{width:100%;table-layout:fixed;border-collapse:collapse;margin:22px 0;font-size:13px}
+.customer-invoice-card th,.customer-invoice-card td{text-align:left;padding:10px 3px;border-bottom:1px solid #eee;overflow-wrap:anywhere}
+.customer-invoice-card th:first-child{width:55%}
+.customer-invoice-card th:nth-child(2){width:13%}
+.customer-invoice-card th:last-child,.customer-invoice-card td:last-child{text-align:right}
+.customer-invoice-total{text-align:right;font-size:20px;font-weight:700}
+.customer-invoice-note{color:#746c60;font-size:12px}
+@media(max-width:500px){.customer-invoice-page{padding:12px}.customer-invoice-card{padding:18px}}
+
+.customer-invoice-logo{display:block;width:min(100%,280px);height:auto;margin:0 auto 12px;object-fit:contain}
+.customer-invoice-logo[hidden],.customer-invoice-brand[hidden]{display:none}
