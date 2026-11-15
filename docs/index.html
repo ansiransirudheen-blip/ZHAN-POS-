@@ -23,8 +23,8 @@ function printInvoice(x){if(!x)return;let net=x.total/1.15,vat=x.total-net;$('in
 const invoiceCloud=window.supabase?.createClient('https://nzbhvsbgpavvuwxpjrun.supabase.co','sb_publishable_xKTwDW8nchBMnbCrvssBaA_Am8UAp7d');
 async function whatsapp(x){
  if(!x)return;
- let phone=(x.phone||'').replace(/\\D/g,'');if(phone.startsWith('0'))phone='966'+phone.slice(1);
- if(!/^\\d{9,15}$/.test(phone)){alert('Enter a valid customer phone number with country code');return}
+ let phone=(x.phone||'').replace(/\D/g,'');if(phone.startsWith('0'))phone='966'+phone.slice(1);
+ if(!/^\d{9,15}$/.test(phone)){alert('Enter a valid customer phone number with country code');return}
  if(!invoiceCloud){alert('PDF link service unavailable. Please reconnect to the internet and try again.');return}
  const {data:{user},error:authError}=await invoiceCloud.auth.getUser();
  if(authError||!user){
@@ -41,7 +41,7 @@ async function whatsapp(x){
   if(up.error)throw up.error;
   const signed=await invoiceCloud.storage.from('zahn-invoice-pdfs').createSignedUrl(path,604800);
   if(signed.error)throw signed.error;
-  const message='ZAHN LUXURY PERFUMES\\nInvoice: '+x.id+'\\nDate: '+x.date+'\\n'+x.items.map(i=>i.name+' '+i.ml+'ml ×'+i.qty+' = '+fmt(i.qty*i.price)).join('\\n')+'\\nTotal: '+fmt(x.total)+'\\nView / Download PDF Invoice: '+signed.data.signedUrl+'\\n(Link valid for 7 days)\\nThank you!';
+  const message='ZAHN LUXURY PERFUMES\nInvoice: '+x.id+'\nDate: '+x.date+'\n'+x.items.map(i=>i.name+' '+i.ml+'ml ×'+i.qty+' = '+fmt(i.qty*i.price)).join('\n')+'\nTotal: '+fmt(x.total)+'\nView / Download PDF Invoice: '+signed.data.signedUrl+'\n(Link valid for 7 days)\nThank you!';
   const url='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
   if(busy){busy.textContent='PDF link ready. ';const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open WhatsApp with PDF Link';busy.appendChild(a)}
   window.open(url,'_blank');
