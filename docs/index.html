@@ -113,8 +113,8 @@ function report(){
  const summary=salesSummary(a),closes=loadDayCloses();
  $('reportOutput').innerHTML=tiles(summary)+'<h3>Invoice Details</h3><div class="report-table"><table><thead><tr><th>Date</th><th>Invoice</th><th>Payment</th><th>Status</th><th>Total</th></tr></thead><tbody>'+a.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.id)+'</td><td>'+esc(paymentName(x.payment))+'</td><td>'+ (closes[x.date]?'Closed':'Open') +'</td><td>'+fmt(x.total)+'</td></tr>').join('')+'</tbody></table></div>'+(a.length?'':'<p>No invoices in selected dates.</p>');
 }
-function csvEscape(v){const t=String(v??'');return /[",\\r\\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t}
-function downloadCsv(name,records){const content='\\uFEFF'+records.map(row=>row.map(csvEscape).join(',')).join('\\r\\n');const blob=new Blob([content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+function csvEscape(v){const t=String(v??'');return /[",\r\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t}
+function downloadCsv(name,records){const content='\uFEFF'+records.map(row=>row.map(csvEscape).join(',')).join('\r\n');const blob=new Blob([content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
 function exportSalesCsv(){const a=filteredSales();if(!a){alert('Invalid date range');return}downloadCsv('ZAHN-sales-'+($('from').value||'all')+'-'+($('to').value||'all')+'.csv',[['Date','Invoice','Customer','Payment','Total SAR','Day Status'],...a.map(x=>[x.date,x.id,x.customer||'',paymentName(x.payment),Number(x.total||0).toFixed(2),loadDayCloses()[x.date]?'Closed':'Open'])])}
 function dayClose(){
  const d=$('closeDate').value;if(!d){$('closeOutput').textContent='Select a date.';return}
