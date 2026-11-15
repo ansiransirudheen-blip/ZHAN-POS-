@@ -8,7 +8,7 @@
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div></div></section>
 <section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><button onclick="report()">View Sales</button><div id="reportOutput"></div></div></section>
 <section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><button onclick="dayClose()">Close Day & View Report</button><div id="closeOutput"></div></div></section>
-<section id="invoicePrint" class="panel hidden"></section><footer>Preview only · Invoices are saved locally in this browser. WhatsApp PDF links use staging storage and expire after 7 days. No cross-device sync or verified tax-invoice compliance. Use test data until production setup is complete.</footer></main>
+<section id="invoicePrint" class="panel hidden"></section><footer><a href="pdf-link-staging.html" target="_blank" rel="noopener">One-time PDF Link Login</a> · Preview only · Invoices are saved locally in this browser. WhatsApp PDF links use staging storage and expire after 7 days. No cross-device sync or verified tax-invoice compliance. Use test data until production setup is complete.</footer></main>
 <script>
 const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'}),fmt=n=>'SAR '+Number(n||0).toFixed(2),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),load=()=>{try{return JSON.parse(localStorage.getItem('zahn_simple_invoices_v1')||'[]')}catch{return []}},store=x=>localStorage.setItem('zahn_simple_invoices_v1',JSON.stringify(x));let rows=[],last=null;
 $('date').value=$('from').value=$('to').value=$('closeDate').value=today();
@@ -28,10 +28,7 @@ async function whatsapp(x){
  if(!invoiceCloud){alert('PDF link service unavailable. Please reconnect to the internet and try again.');return}
  const {data:{user},error:authError}=await invoiceCloud.auth.getUser();
  if(authError||!user){
-  const email=prompt('One-time ZAHN staging sign-in: enter your admin email to receive a login link. After signing in, tap WhatsApp again.');
-  if(!email)return;
-  const {error}=await invoiceCloud.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});
-  alert(error?'Unable to send login email: '+error.message:'Check your email and open the sign-in link, then press WhatsApp again.');
+  alert('PDF Link requires one-time sign-in. Open the ZAHN Staging Login page in this same browser and sign in once. Then return here and tap WhatsApp again. If you see an email rate limit, wait before requesting another link.');
   return;
  }
  const busy=document.getElementById('msg');if(busy)busy.textContent='Preparing PDF invoice link...';
