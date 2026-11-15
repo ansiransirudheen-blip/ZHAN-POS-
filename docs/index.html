@@ -244,11 +244,11 @@ async function zahnPreviewJsonRestore(input){
   if(b.invoices.length>100000||Object.keys(b.dayCloses).length>10000)throw Error('Too many records.');
   const ids=new Set();
   for(const x of b.invoices){
-   if(!x||typeof x!=='object'||typeof x.id!=='string'||!/^ZHN-[A-Za-z0-9-]{1,90}$/.test(x.id)||ids.has(x.id)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(x.date)||!Array.isArray(x.items)||!Number.isFinite(Number(x.total))||Number(x.total)<0)throw Error('Invalid or repeated invoice in backup.');
+   if(!x||typeof x!=='object'||typeof x.id!=='string'||!/^ZHN-[A-Za-z0-9-]{1,90}$/.test(x.id)||ids.has(x.id)||!/^\d{4}-\d{2}-\d{2}$/.test(x.date)||!Array.isArray(x.items)||!Number.isFinite(Number(x.total))||Number(x.total)<0)throw Error('Invalid or repeated invoice in backup.');
    ids.add(x.id);
   }
   for(const [date,entry] of Object.entries(b.dayCloses)){
-   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!entry||typeof entry!=='object'||Array.isArray(entry))throw Error('Invalid day-close record.');
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!entry||typeof entry!=='object'||Array.isArray(entry))throw Error('Invalid day-close record.');
   }
   const localIds=new Set(load().map(x=>x.id)),localDays=loadDayCloses();
   const newInvoices=b.invoices.filter(x=>!localIds.has(x.id)).length;
