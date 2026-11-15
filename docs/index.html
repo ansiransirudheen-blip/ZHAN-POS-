@@ -3,20 +3,21 @@
 /* ZAHN premium white & gold theme */
 :root{background:#faf9f6;color:#29241c}body{background:#faf9f6;color:#29241c}header{background:#fff;border-bottom:2px solid #c3a16b;box-shadow:0 2px 12px #392a1310}h1{color:#a47b37}small{color:#806d4c}button{background:#fff;color:#77551d;border:1px solid #b99659;box-shadow:0 1px 3px #37280d0d}button.active,button.primary{background:#bd9550;color:#fff;border-color:#bd9550}button:hover{background:#f8f0df}button.active:hover,button.primary:hover{background:#ab823f}input,select{background:#fff;color:#27231d;border:1px solid #cfc5b5;box-shadow:0 1px 2px #00000008}input:focus,select:focus{outline:2px solid #d8b878;outline-offset:1px}input::placeholder{color:#817e79}label{color:#80602e}.panel{background:#fff;border:1px solid #e7ddcd;box-shadow:0 4px 20px #4230160b}.muted{color:#6d675d}.tot{color:#946a28}td,th{border-bottom:1px solid #e8e0d5}.pill{border:1px solid #bd995d;color:#8b652e;background:#fffaf0}footer{color:#756f66}
 @media print{header,nav,button,.no-print,footer,#new,#saved,#reports,#close{display:none!important}body{background:white;color:black}.panel{border:0;background:white;color:black}.hidden{display:none}#invoicePrint{display:block!important}main{padding:0}#invoicePrint table td,#invoicePrint table th{color:black;border-color:#aaa}}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin:15px 0}.summary-tile{background:#fffaf0;border:1px solid #e7d7b8;border-radius:10px;padding:14px}.summary-tile strong{display:block;font-size:20px;color:#936a28;margin-top:6px}.report-table{overflow-x:auto}.report-table table{min-width:530px}.action-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.action-row button{flex:0 1 auto}.status-note{padding:12px;border:1px solid #d9c69f;border-radius:9px;background:#fffaf0}@media print{.summary-grid{grid-template-columns:repeat(3,1fr)}}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script></head><body><header><div><h1>ZAHN</h1><small>LUXURY PERFUMES · ESSENCE OF YOU</small></div><span class="pill">INVOICE MAKER PREVIEW</span></header><main><nav><button class="active" onclick="show('new',this)">New Invoice</button><button onclick="show('saved',this)">Saved Invoices</button><button onclick="show('reports',this)">Sales Reports</button><button onclick="show('close',this)">Day Close</button></nav>
 <section id="new"><div class="panel"><h2>New Invoice</h2><div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>Customer Name</label><input id="customer" placeholder="Optional"></div><div><label>Mobile Number</label><input id="phone" type="tel" placeholder="9665XXXXXXXX"></div><div><label>Payment</label><select id="payment"><option>Cash</option><option>Mada</option><option>Bank Transfer</option></select></div></div><h3>Perfumes</h3><datalist id="names"></datalist><div id="items"></div><button onclick="addItem()">+ Add Perfume</button><p class="right tot" id="total">SAR 0.00</p><button class="primary" onclick="save()">Save Invoice</button><p id="msg" role="status"></p></div></section>
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div></div></section>
-<section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><button onclick="report()">View Sales</button><div id="reportOutput"></div></div></section>
-<section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><button onclick="dayClose()">Close Day & View Report</button><div id="closeOutput"></div></div></section>
+<section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div></div></section>
+<section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><div class="action-row"><button onclick="dayClose()">View Day Summary</button><button class="primary" onclick="confirmDayClose()">Confirm Day Close</button><button onclick="reopenDay()">Reopen Day</button><button onclick="exportDayCloseCsv()">Export Day Close CSV</button></div><div id="closeOutput"></div></div></section>
 <section id="invoicePrint" class="panel hidden"></section><footer><a href="pdf-link-staging.html" target="_blank" rel="noopener">One-time PDF Link Login</a> · Preview only · Invoices are saved locally in this browser. WhatsApp PDF links use staging storage and expire after 7 days. No cross-device sync or verified tax-invoice compliance. Use test data until production setup is complete.</footer></main>
 <script>
 const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'}),fmt=n=>'SAR '+Number(n||0).toFixed(2),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),load=()=>{try{return JSON.parse(localStorage.getItem('zahn_simple_invoices_v1')||'[]')}catch{return []}},store=x=>localStorage.setItem('zahn_simple_invoices_v1',JSON.stringify(x));let rows=[],last=null;
 $('date').value=$('from').value=$('to').value=$('closeDate').value=today();
-function show(id,btn){['new','saved','reports','close'].forEach(x=>$(x).classList.toggle('hidden',x!==id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));$('invoicePrint').classList.add('hidden');if(id==='saved')saved();if(id==='reports')report()}
+function show(id,btn){['new','saved','reports','close'].forEach(x=>$(x).classList.toggle('hidden',x!==id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));$('invoicePrint').classList.add('hidden');if(id==='saved')saved();if(id==='reports')report();if(id==='close')dayClose()}
 function addItem(){rows.push({name:'',ml:'50',qty:1,price:0});draw()}
 function draw(){let names=[...new Set(load().flatMap(x=>x.items.map(i=>i.name)).filter(Boolean))];$('names').innerHTML=names.map(x=>'<option value="'+esc(x)+'">').join('');$('items').innerHTML=rows.map((r,i)=>'<div class="item"><label>Perfume Name<input list="names" value="'+esc(r.name)+'" oninput="edit('+i+',\'name\',this.value)" placeholder="e.g. Secret One"></label><label>ML<input type="number" min="1" value="'+esc(r.ml)+'" oninput="edit('+i+',\'ml\',this.value)"></label><label>Qty<input type="number" min="1" value="'+esc(r.qty)+'" oninput="edit('+i+',\'qty\',this.value)"></label><label>Price (SAR)<input type="number" min="0" step=".01" value="'+esc(r.price)+'" oninput="edit('+i+',\'price\',this.value)"></label><button onclick="rows.splice('+i+',1);draw()">Remove</button></div>').join('');total()}
 function edit(i,k,v){rows[i][k]=v;total()}function total(){$('total').textContent=fmt(rows.reduce((s,r)=>s+Number(r.qty||0)*Number(r.price||0),0))}
-function save(){let items=rows.map(r=>({...r,name:r.name.trim(),ml:Number(r.ml),qty:Number(r.qty),price:Number(r.price)}));if(!items.length||items.some(r=>!r.name||!(r.ml>0)||!(r.qty>0)||!(r.price>=0))){$('msg').textContent='Enter valid perfume name, ML, quantity and price.';return}let invoices=load(),id='ZHN-'+Date.now(),inv={id,date:$('date').value,customer:$('customer').value.trim(),phone:$('phone').value.trim(),payment:$('payment').value,items,total:items.reduce((s,r)=>s+r.qty*r.price,0),createdAt:new Date().toISOString()};if(!inv.date){$('msg').textContent='Choose invoice date.';return}invoices.push(inv);try{store(invoices)}catch{$('msg').textContent='Unable to save. Check browser storage.';return}last=inv;rows=[];addItem();$('msg').innerHTML='Invoice saved: '+esc(id)+' <button onclick="printInvoice(last)">Print / Save PDF</button> <button onclick="whatsapp(last)">WhatsApp Text</button> <button onclick="sharePdf(last)">Share PDF to WhatsApp</button>'}
+function save(){let items=rows.map(r=>({...r,name:r.name.trim(),ml:Number(r.ml),qty:Number(r.qty),price:Number(r.price)}));if(!items.length||items.some(r=>!r.name||!(r.ml>0)||!(r.qty>0)||!(r.price>=0))){$('msg').textContent='Enter valid perfume name, ML, quantity and price.';return}let invoices=load(),id='ZHN-'+Date.now(),inv={id,date:$('date').value,customer:$('customer').value.trim(),phone:$('phone').value.trim(),payment:$('payment').value,items,total:items.reduce((s,r)=>s+r.qty*r.price,0),createdAt:new Date().toISOString()};if(!inv.date){$('msg').textContent='Choose invoice date.';return}if(loadDayCloses()[inv.date]){$('msg').textContent='This date is closed. Reopen it in Day Close before saving an invoice.';return}invoices.push(inv);try{store(invoices)}catch{$('msg').textContent='Unable to save. Check browser storage.';return}last=inv;rows=[];addItem();$('msg').innerHTML='Invoice saved: '+esc(id)+' <button onclick="printInvoice(last)">Print / Save PDF</button> <button onclick="whatsapp(last)">WhatsApp Text</button> <button onclick="sharePdf(last)">Share PDF to WhatsApp</button>'}
 function saved(){let a=load().slice().reverse();$('savedList').innerHTML=a.length?a.map(x=>'<div class="panel"><b>'+esc(x.id)+'</b> · '+esc(x.date)+' · '+fmt(x.total)+' · '+esc(x.customer)+' <button onclick="printById(\''+esc(x.id)+'\')">Print / PDF</button> <button onclick="sendById(\''+esc(x.id)+'\')">WhatsApp Text</button> <button onclick="pdfById(\''+esc(x.id)+'\')">Share PDF</button></div>').join(''):'No invoices saved'}
 function printById(id){printInvoice(load().find(x=>x.id===id))}function sendById(id){whatsapp(load().find(x=>x.id===id))}
 function printInvoice(x){if(!x)return;let net=x.total/1.15,vat=x.total-net;$('invoicePrint').innerHTML='<h1>ZAHN LUXURY PERFUMES</h1><p>ESSENCE OF YOU</p><h2>Invoice</h2><p>Invoice: '+esc(x.id)+'<br>Date: '+esc(x.date)+'<br>Customer: '+esc(x.customer)+'<br>Mobile: '+esc(x.phone)+'</p><table><tr><th>Perfume</th><th>ML</th><th>Qty</th><th>Amount</th></tr>'+x.items.map(i=>'<tr><td>'+esc(i.name)+'</td><td>'+i.ml+'</td><td>'+i.qty+'</td><td>'+fmt(i.qty*i.price)+'</td></tr>').join('')+'</table><p class="right">Subtotal before VAT: '+fmt(net)+'</p><p class="right">VAT 15% included: '+fmt(vat)+'</p><h2 class="right">Total '+fmt(x.total)+'</h2><p>Payment: '+esc(x.payment)+'</p><small>Invoice format pending Saudi tax compliance review.</small>';$('invoicePrint').classList.remove('hidden');setTimeout(()=>window.print(),100)}
@@ -81,7 +82,63 @@ async function sharePdf(x){
   }
  }catch(e){if(e.name!=='AbortError')alert('Unable to share PDF: '+(e.message||e))}
 }
-function report(){let a=load().filter(x=>x.date>=($('from').value||'0000')&&x.date<=($('to').value||'9999'));$('reportOutput').innerHTML='<h3>Invoices: '+a.length+' · Total Sales: '+fmt(a.reduce((s,x)=>s+x.total,0))+'</h3><table><tr><th>Date</th><th>Invoice</th><th>Total</th></tr>'+a.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.id)+'</td><td>'+fmt(x.total)+'</td></tr>').join('')+'</table>'}
-function dayClose(){let d=$('closeDate').value,a=load().filter(x=>x.date===d);$('closeOutput').innerHTML='<h3>'+esc(d)+' — '+a.length+' invoices, '+fmt(a.reduce((s,x)=>s+x.total,0))+'</h3><p>Day-close summary only; invoices remain editable only by creating a new invoice (no deletion feature).</p>'}
+
+const closeKey='zahn_simple_day_closes_v1';
+function loadDayCloses(){try{return JSON.parse(localStorage.getItem(closeKey)||'{}')}catch{return {}}}
+function paymentName(x){return ['Cash','Mada','Bank Transfer'].includes(x)?x:'Other'}
+function salesSummary(invoices){
+ const totals={'Cash':0,'Mada':0,'Bank Transfer':0,'Other':0};
+ invoices.forEach(x=>{totals[paymentName(x.payment)]+=Number(x.total)||0});
+ return {count:invoices.length,total:invoices.reduce((sum,x)=>sum+(Number(x.total)||0),0),totals};
+}
+function tiles(summary){
+ const data=[['Invoices',summary.count],['Total Sales',fmt(summary.total)],['Cash',fmt(summary.totals.Cash)],['Mada',fmt(summary.totals.Mada)],['Bank Transfer',fmt(summary.totals['Bank Transfer'])]];
+ if(summary.totals.Other)data.push(['Other',fmt(summary.totals.Other)]);
+ return '<div class="summary-grid">'+data.map(([label,value])=>'<div class="summary-tile">'+esc(label)+'<strong>'+esc(value)+'</strong></div>').join('')+'</div>';
+}
+function reportPreset(type){
+ const d=today();
+ if(type==='today'){$('from').value=d;$('to').value=d}
+ else if(type==='month'){$('from').value=d.slice(0,7)+'-01';$('to').value=d}
+ else {$('from').value='';$('to').value=''}
+ report();
+}
+function filteredSales(){
+ const from=$('from').value||'0000',to=$('to').value||'9999';
+ if(from>to)return null;
+ return load().filter(x=>x.date>=from&&x.date<=to).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
+}
+function report(){
+ const a=filteredSales();if(!a){$('reportOutput').textContent='From Date must be before or equal to To Date.';return}
+ const summary=salesSummary(a),closes=loadDayCloses();
+ $('reportOutput').innerHTML=tiles(summary)+'<h3>Invoice Details</h3><div class="report-table"><table><thead><tr><th>Date</th><th>Invoice</th><th>Payment</th><th>Status</th><th>Total</th></tr></thead><tbody>'+a.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.id)+'</td><td>'+esc(paymentName(x.payment))+'</td><td>'+ (closes[x.date]?'Closed':'Open') +'</td><td>'+fmt(x.total)+'</td></tr>').join('')+'</tbody></table></div>'+(a.length?'':'<p>No invoices in selected dates.</p>');
+}
+function csvEscape(v){const t=String(v??'');return /[",\\r\\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t}
+function downloadCsv(name,records){const content='\\uFEFF'+records.map(row=>row.map(csvEscape).join(',')).join('\\r\\n');const blob=new Blob([content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+function exportSalesCsv(){const a=filteredSales();if(!a){alert('Invalid date range');return}downloadCsv('ZAHN-sales-'+($('from').value||'all')+'-'+($('to').value||'all')+'.csv',[['Date','Invoice','Customer','Payment','Total SAR','Day Status'],...a.map(x=>[x.date,x.id,x.customer||'',paymentName(x.payment),Number(x.total||0).toFixed(2),loadDayCloses()[x.date]?'Closed':'Open'])])}
+function dayClose(){
+ const d=$('closeDate').value;if(!d){$('closeOutput').textContent='Select a date.';return}
+ const a=load().filter(x=>x.date===d),summary=salesSummary(a),record=loadDayCloses()[d];
+ $('closeOutput').innerHTML='<p class="status-note"><strong>'+esc(d)+'</strong> — '+(record?'Closed on '+esc(new Date(record.closedAt).toLocaleString('en-GB')):'Open (not yet closed)')+'</p>'+tiles(summary)+(record?'<p>Recorded close: '+fmt(record.total)+' from '+record.count+' invoices. Current totals are shown above.</p>':'<p>Confirm Day Close to lock new invoice entry for this date in this browser.</p>');
+}
+function confirmDayClose(){
+ const d=$('closeDate').value;if(!d)return alert('Select a date');
+ if(loadDayCloses()[d])return alert('This date is already closed.');
+ if(d>today())return alert('Future dates cannot be closed.');
+ const summary=salesSummary(load().filter(x=>x.date===d));
+ if(!confirm('Close '+d+' with '+summary.count+' invoices and '+fmt(summary.total)+'? New invoices for this date will be blocked until reopened.'))return;
+ const closes=loadDayCloses();closes[d]={closedAt:new Date().toISOString(),count:summary.count,total:summary.total,payments:summary.totals};
+ try{localStorage.setItem(closeKey,JSON.stringify(closes));dayClose();alert('Day Close saved on this browser.')}catch(e){alert('Unable to save Day Close: '+e.message)}
+}
+function reopenDay(){
+ const d=$('closeDate').value,closes=loadDayCloses();if(!closes[d])return alert('This date is not closed.');
+ if(!confirm('Reopen '+d+'? New invoices for this date will be allowed.'))return;
+ delete closes[d];try{localStorage.setItem(closeKey,JSON.stringify(closes));dayClose();alert('Day reopened.')}catch(e){alert('Unable to reopen day: '+e.message)}
+}
+function exportDayCloseCsv(){
+ const d=$('closeDate').value;if(!d)return alert('Select a date');
+ const summary=salesSummary(load().filter(x=>x.date===d)),record=loadDayCloses()[d];
+ downloadCsv('ZAHN-day-close-'+d+'.csv',[['Date','Status','Invoice Count','Total SAR','Cash SAR','Mada SAR','Bank Transfer SAR','Other SAR','Closed At'],[d,record?'Closed':'Open',summary.count,summary.total.toFixed(2),summary.totals.Cash.toFixed(2),summary.totals.Mada.toFixed(2),summary.totals['Bank Transfer'].toFixed(2),summary.totals.Other.toFixed(2),record?.closedAt||'']]);
+}
 addItem();
 </script></body></html>
