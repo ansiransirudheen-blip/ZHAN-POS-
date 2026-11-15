@@ -9,7 +9,7 @@
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div></div></section>
 <section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div></div></section>
 <section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><div class="action-row"><button onclick="dayClose()">View Day Summary</button><button class="primary" onclick="confirmDayClose()">Confirm Day Close</button><button onclick="reopenDay()">Reopen Day</button><button onclick="exportDayCloseCsv()">Export Day Close CSV</button></div><div id="closeOutput"></div></div></section>
-<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup (Staging)</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer><a href="pdf-link-staging.html" target="_blank" rel="noopener">One-time PDF Link Login</a> · Preview only · Invoices are saved locally in this browser. WhatsApp PDF links use private staging storage with permanent unguessable links. Anyone with a link can view that invoice; links work while the service and file remain available. Online invoices use staging server numbering; offline invoices have provisional unique IDs. Auto Sync is in staging testing; tax-invoice compliance is not verified. Use test data until production setup is complete.</footer></main>
+<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup (Staging)</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p><label for="zahnJsonRestoreFile">Restore JSON Backup (adds missing records only)</label><input id="zahnJsonRestoreFile" type="file" accept=".json,application/json" onchange="zahnPreviewJsonRestore(this)"></p><p id="zahnJsonRestoreStatus" role="status" class="muted">Choose a ZAHN JSON backup file to preview it. No changes until you confirm.</p><button id="zahnJsonRestoreConfirm" onclick="zahnConfirmJsonRestore()" disabled>Confirm Restore Missing Records</button><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer><a href="pdf-link-staging.html" target="_blank" rel="noopener">One-time PDF Link Login</a> · Preview only · Invoices are saved locally in this browser. WhatsApp PDF links use private staging storage with permanent unguessable links. Anyone with a link can view that invoice; links work while the service and file remain available. Online invoices use staging server numbering; offline invoices have provisional unique IDs. Auto Sync is in staging testing; tax-invoice compliance is not verified. Use test data until production setup is complete.</footer></main>
 <script>
 const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'}),fmt=n=>'SAR '+Number(n||0).toFixed(2),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),load=()=>{try{return JSON.parse(localStorage.getItem('zahn_simple_invoices_v1')||'[]')}catch{return []}},store=x=>localStorage.setItem('zahn_simple_invoices_v1',JSON.stringify(x));let rows=[],last=null;
 $('date').value=$('from').value=$('to').value=$('closeDate').value=today();
@@ -229,6 +229,54 @@ function zahnDownloadJsonBackup(){
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
   $('jsonBackupStatus').textContent='JSON backup prepared: '+invoices.length+' invoices, '+Object.keys(dayCloses).length+' closed days. Save the downloaded file to iPhone Files or iCloud Drive and confirm it exists.';
  }catch(e){$('jsonBackupStatus').textContent='Backup export failed: '+(e.message||e)}
+}
+
+let zahnRestorePreview=null;
+async function zahnPreviewJsonRestore(input){
+ zahnRestorePreview=null;
+ $('zahnJsonRestoreConfirm').disabled=true;
+ const status=$('zahnJsonRestoreStatus'),file=input.files&&input.files[0];
+ if(!file){status.textContent='No file selected.';return}
+ if(file.size>15*1024*1024){status.textContent='Backup too large (maximum 15 MB).';return}
+ try{
+  const b=JSON.parse(await file.text());
+  if(b.format!=='ZAHN-INVOICE-MAKER-LOCAL-BACKUP'||b.version!==1||!Array.isArray(b.invoices)||!b.dayCloses||typeof b.dayCloses!=='object'||Array.isArray(b.dayCloses))throw Error('This is not a supported ZAHN JSON backup.');
+  if(b.invoices.length>100000||Object.keys(b.dayCloses).length>10000)throw Error('Too many records.');
+  const ids=new Set();
+  for(const x of b.invoices){
+   if(!x||typeof x!=='object'||typeof x.id!=='string'||!/^ZHN-[A-Za-z0-9-]{1,90}$/.test(x.id)||ids.has(x.id)||!/^\\d{4}-\\d{2}-\\d{2}$/.test(x.date)||!Array.isArray(x.items)||!Number.isFinite(Number(x.total))||Number(x.total)<0)throw Error('Invalid or repeated invoice in backup.');
+   ids.add(x.id);
+  }
+  for(const [date,entry] of Object.entries(b.dayCloses)){
+   if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!entry||typeof entry!=='object'||Array.isArray(entry))throw Error('Invalid day-close record.');
+  }
+  const localIds=new Set(load().map(x=>x.id)),localDays=loadDayCloses();
+  const newInvoices=b.invoices.filter(x=>!localIds.has(x.id)).length;
+  const newDays=Object.keys(b.dayCloses).filter(d=>!Object.prototype.hasOwnProperty.call(localDays,d)).length;
+  zahnRestorePreview={invoices:b.invoices,dayCloses:b.dayCloses};
+  status.textContent='Verified backup: '+b.invoices.length+' invoices, '+Object.keys(b.dayCloses).length+' closed days. Missing on this device: '+newInvoices+' invoices, '+newDays+' closed days. Existing records will not be replaced.';
+  $('zahnJsonRestoreConfirm').disabled=!(newInvoices||newDays);
+ }catch(e){status.textContent='Restore blocked: '+(e.message||e)}
+}
+function zahnConfirmJsonRestore(){
+ const b=zahnRestorePreview;if(!b)return;
+ if(!confirm('Restore only missing invoices and day closes from the selected JSON file? Existing records will remain unchanged.'))return;
+ const status=$('zahnJsonRestoreStatus');
+ try{
+  const local=load(),ids=new Set(local.map(x=>x.id)),days=loadDayCloses(),pending=JSON.parse(localStorage.getItem('zahn_sync_day_ops_v1')||'{}');
+  let invoicesAdded=0,daysAdded=0;
+  for(const x of b.invoices){if(!ids.has(x.id)){local.push(x);ids.add(x.id);invoicesAdded++}}
+  for(const [date,entry] of Object.entries(b.dayCloses)){
+   if(!Object.prototype.hasOwnProperty.call(days,date)&&!Object.prototype.hasOwnProperty.call(pending,date)){days[date]=entry;daysAdded++}
+  }
+  // Stage all writes first; no existing invoice or day-close is overwritten.
+  const invoiceJSON=JSON.stringify(local),dayJSON=JSON.stringify(days);
+  localStorage.setItem('zahn_simple_invoices_v1',invoiceJSON);
+  localStorage.setItem(closeKey,dayJSON);
+  zahnRestorePreview=null;$('zahnJsonRestoreConfirm').disabled=true;$('zahnJsonRestoreFile').value='';
+  status.textContent='Restore completed: '+invoicesAdded+' missing invoices and '+daysAdded+' missing closed days added. Existing records preserved.';
+  zahnScheduleSync();
+ }catch(e){status.textContent='Restore failed: '+(e.message||e)+'. Do not clear browser storage.'}
 }
 async function cloudBackup(){
  const user=await cloudCheck();if(!user)return alert('Sign in first');
