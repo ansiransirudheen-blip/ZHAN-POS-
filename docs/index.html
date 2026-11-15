@@ -9,7 +9,7 @@
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div></div></section>
 <section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div></div></section>
 <section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><div class="action-row"><button onclick="dayClose()">View Day Summary</button><button class="primary" onclick="confirmDayClose()">Confirm Day Close</button><button onclick="reopenDay()">Reopen Day</button><button onclick="exportDayCloseCsv()">Export Day Close CSV</button></div><div id="closeOutput"></div></div></section>
-<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup (Staging)</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button></p><p class="muted">Backups are manual for now. Restore adds missing records without deleting local data. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer><a href="pdf-link-staging.html" target="_blank" rel="noopener">One-time PDF Link Login</a> · Preview only · Invoices are saved locally in this browser. WhatsApp PDF links use private staging storage with permanent unguessable links. Anyone with a link can view that invoice; links work while the service and file remain available. No cross-device sync or verified tax-invoice compliance. Use test data until production setup is complete.</footer></main>
+<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup (Staging)</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button></p><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer><a href="pdf-link-staging.html" target="_blank" rel="noopener">One-time PDF Link Login</a> · Preview only · Invoices are saved locally in this browser. WhatsApp PDF links use private staging storage with permanent unguessable links. Anyone with a link can view that invoice; links work while the service and file remain available. Auto Sync is in staging testing; tax-invoice compliance is not verified. Use test data until production setup is complete.</footer></main>
 <script>
 const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'}),fmt=n=>'SAR '+Number(n||0).toFixed(2),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),load=()=>{try{return JSON.parse(localStorage.getItem('zahn_simple_invoices_v1')||'[]')}catch{return []}},store=x=>localStorage.setItem('zahn_simple_invoices_v1',JSON.stringify(x));let rows=[],last=null;
 $('date').value=$('from').value=$('to').value=$('closeDate').value=today();
@@ -20,7 +20,7 @@ function suggestPerfumes(input,index){const host=input.closest('.perfume-field')
 function hidePerfumeSuggestions(input){setTimeout(()=>{const list=input.closest('.perfume-field')?.querySelector('.perfume-suggestions');if(list)list.hidden=true},180)}
 function draw(){const names=perfumeNames();$('names').innerHTML=names.map(x=>'<option value="'+esc(x)+'">').join('');$('items').innerHTML=rows.map((r,i)=>'<div class="item"><div class="perfume-field"><label>Perfume Name<input list="names" autocomplete="off" value="'+esc(r.name)+'" oninput="edit('+i+',\'name\',this.value);suggestPerfumes(this,'+i+')" onfocus="suggestPerfumes(this,'+i+')" onblur="hidePerfumeSuggestions(this)" placeholder="Type perfume name"></label><div class="perfume-suggestions" hidden></div></div><label>ML<input type="number" min="1" value="'+esc(r.ml)+'" oninput="edit('+i+',\'ml\',this.value)"></label><label>Qty<input type="number" min="1" value="'+esc(r.qty)+'" oninput="edit('+i+',\'qty\',this.value)"></label><label>Price (SAR)<input type="number" min="0" step=".01" value="'+esc(r.price)+'" oninput="edit('+i+',\'price\',this.value)"></label><button onclick="rows.splice('+i+',1);draw()">Remove</button></div>').join('');total()}
 function edit(i,k,v){rows[i][k]=v;total()}function money(n){return Math.round((Number(n)+Number.EPSILON)*100)/100}function subtotalAmount(){return money(rows.reduce((s,r)=>s+Number(r.qty||0)*Number(r.price||0),0))}function discountAmount(){return Number($('discount').value)}function total(){const subtotal=subtotalAmount(),discount=discountAmount(),valid=Number.isFinite(discount)&&discount>=0&&discount<=subtotal;$('subtotal').textContent=fmt(subtotal);$('discountShown').textContent=fmt(valid?discount:0);$('total').textContent=valid?fmt(money(subtotal-discount)):'Invalid discount';return valid}
-function save(){let items=rows.map(r=>({...r,name:r.name.trim(),ml:Number(r.ml),qty:Number(r.qty),price:Number(r.price)}));if(!items.length||items.some(r=>!r.name||!(r.ml>0)||!(r.qty>0)||!(r.price>=0))){$('msg').textContent='Enter valid perfume name, ML, quantity and price.';return}if(!total()){$('msg').textContent='Discount must be between SAR 0 and the perfume subtotal.';return}const subtotal=money(items.reduce((s,r)=>s+r.qty*r.price,0)),discount=money(discountAmount());let invoices=load(),id='ZHN-'+Date.now(),inv={id,date:$('date').value,customer:$('customer').value.trim(),phone:$('phone').value.trim(),payment:$('payment').value,items,subtotal,discount,total:money(subtotal-discount),createdAt:new Date().toISOString()};if(!inv.date){$('msg').textContent='Choose invoice date.';return}if(loadDayCloses()[inv.date]){$('msg').textContent='This date is closed. Reopen it in Day Close before saving an invoice.';return}invoices.push(inv);try{store(invoices)}catch{$('msg').textContent='Unable to save. Check browser storage.';return}last=inv;rows=[];$('discount').value='0';addItem();$('msg').innerHTML='Invoice saved: '+esc(id)+' <button onclick="printInvoice(last)">Print / Save PDF</button> <button onclick="whatsapp(last)">WhatsApp Text</button> <button onclick="sharePdf(last)">Share PDF to WhatsApp</button>'}
+function save(){let items=rows.map(r=>({...r,name:r.name.trim(),ml:Number(r.ml),qty:Number(r.qty),price:Number(r.price)}));if(!items.length||items.some(r=>!r.name||!(r.ml>0)||!(r.qty>0)||!(r.price>=0))){$('msg').textContent='Enter valid perfume name, ML, quantity and price.';return}if(!total()){$('msg').textContent='Discount must be between SAR 0 and the perfume subtotal.';return}const subtotal=money(items.reduce((s,r)=>s+r.qty*r.price,0)),discount=money(discountAmount());let invoices=load(),id='ZHN-'+Date.now(),inv={id,date:$('date').value,customer:$('customer').value.trim(),phone:$('phone').value.trim(),payment:$('payment').value,items,subtotal,discount,total:money(subtotal-discount),createdAt:new Date().toISOString()};if(!inv.date){$('msg').textContent='Choose invoice date.';return}if(loadDayCloses()[inv.date]){$('msg').textContent='This date is closed. Reopen it in Day Close before saving an invoice.';return}invoices.push(inv);try{store(invoices)}catch{$('msg').textContent='Unable to save. Check browser storage.';return}last=inv;zahnScheduleSync();rows=[];$('discount').value='0';addItem();$('msg').innerHTML='Invoice saved: '+esc(id)+' <button onclick="printInvoice(last)">Print / Save PDF</button> <button onclick="whatsapp(last)">WhatsApp Text</button> <button onclick="sharePdf(last)">Share PDF to WhatsApp</button>'}
 function saved(){let a=load().slice().reverse();$('savedList').innerHTML=a.length?a.map(x=>'<div class="panel"><b>'+esc(x.id)+'</b> · '+esc(x.date)+' · '+fmt(x.total)+' · '+esc(x.customer)+' <button onclick="printById(\''+esc(x.id)+'\')">Print / PDF</button> <button onclick="sendById(\''+esc(x.id)+'\')">WhatsApp Text</button> <button onclick="pdfById(\''+esc(x.id)+'\')">Share PDF</button></div>').join(''):'No invoices saved'}
 function printById(id){printInvoice(load().find(x=>x.id===id))}function sendById(id){whatsapp(load().find(x=>x.id===id))}
 function invoiceHtml(x){
@@ -158,12 +158,12 @@ function confirmDayClose(){
  const summary=salesSummary(load().filter(x=>x.date===d));
  if(!confirm('Close '+d+' with '+summary.count+' invoices and '+fmt(summary.total)+'? New invoices for this date will be blocked until reopened.'))return;
  const closes=loadDayCloses();closes[d]={closedAt:new Date().toISOString(),count:summary.count,total:summary.total,payments:summary.totals};
- try{localStorage.setItem(closeKey,JSON.stringify(closes));dayClose();alert('Day Close saved on this browser.')}catch(e){alert('Unable to save Day Close: '+e.message)}
+ try{localStorage.setItem(closeKey,JSON.stringify(closes));zahnQueueDay(d,'close',closes[d]);dayClose();alert('Day Close saved. Auto Sync will update cloud when online.')}catch(e){alert('Unable to save Day Close: '+e.message)}
 }
 function reopenDay(){
  const d=$('closeDate').value,closes=loadDayCloses();if(!closes[d])return alert('This date is not closed.');
  if(!confirm('Reopen '+d+'? New invoices for this date will be allowed.'))return;
- delete closes[d];try{localStorage.setItem(closeKey,JSON.stringify(closes));dayClose();alert('Day reopened.')}catch(e){alert('Unable to reopen day: '+e.message)}
+ delete closes[d];try{localStorage.setItem(closeKey,JSON.stringify(closes));zahnQueueDay(d,'reopen');dayClose();alert('Day reopened. Auto Sync will update cloud when online.')}catch(e){alert('Unable to reopen day: '+e.message)}
 }
 function exportDayCloseCsv(){
  const d=$('closeDate').value;if(!d)return alert('Select a date');
@@ -176,7 +176,7 @@ async function cloudCheck(){
  if(!invoiceCloud){el.textContent='Cloud library unavailable';return null}
  const {data,error}=await invoiceCloud.auth.getUser();
  if(error||!data?.user){el.textContent='Not signed in. Sign in before backing up.';return null}
- el.textContent='Signed in: '+(data.user.email||'Account')+'. Ready for manual backup.';
+ el.textContent='Signed in: '+(data.user.email||'Account')+'. Auto Sync enabled.';
  return data.user;
 }
 async function cloudLogin(){
@@ -225,5 +225,87 @@ async function cloudRestore(){
   $('cloudStatus').textContent='Restore complete: '+added+' invoices and '+addedDays+' day closes added.';
  }catch(e){$('cloudStatus').textContent='Restore failed: '+e.message}
 }
+
+/* Staging automatic sync: append-only invoices, owner-scoped cloud, queued day-close changes. */
+const zahnSyncQueueKey='zahn_sync_day_ops_v1';
+let zahnSyncBusy=false,zahnSyncTimer=null,zahnSyncUser=null;
+function zahnQueueDay(date,action,payload){
+ const q=JSON.parse(localStorage.getItem(zahnSyncQueueKey)||'{}');
+ q[date]={action,payload:payload||null};
+ localStorage.setItem(zahnSyncQueueKey,JSON.stringify(q));
+ zahnScheduleSync();
+}
+function zahnScheduleSync(){
+ if(zahnSyncTimer)clearTimeout(zahnSyncTimer);
+ zahnSyncTimer=setTimeout(()=>{zahnSyncTimer=null;zahnAutoSync()},1200);
+}
+function zahnSyncStatus(msg){const el=$('cloudStatus');if(el)el.textContent=msg}
+async function zahnAutoSync(){
+ if(zahnSyncBusy||!navigator.onLine||!invoiceCloud)return;
+ zahnSyncBusy=true;
+ try{
+  const {data:{user},error:authError}=await invoiceCloud.auth.getUser();
+  if(authError||!user){zahnSyncUser=null;return}
+  zahnSyncUser=user.id;
+  const localInvoices=load();
+  // Upload first: never overwrite a saved cloud invoice.
+  for(const x of localInvoices){
+   const {error}=await invoiceCloud.from('zahn_invoice_records').upsert({id:x.id,owner_id:user.id,invoice_date:x.date,payload:x},{onConflict:'id',ignoreDuplicates:true});
+   if(error)throw error;
+  }
+  // Process explicit close/reopen actions before downloading remote state.
+  const queued=JSON.parse(localStorage.getItem(zahnSyncQueueKey)||'{}');
+  for(const [date,op] of Object.entries(queued)){
+   let result;
+   if(op.action==='reopen')result=await invoiceCloud.from('zahn_day_closes').delete().eq('close_date',date).eq('owner_id',user.id);
+   else result=await invoiceCloud.from('zahn_day_closes').upsert({close_date:date,owner_id:user.id,payload:op.payload},{onConflict:'close_date,owner_id'});
+   if(result.error)throw result.error;
+   const current=JSON.parse(localStorage.getItem(zahnSyncQueueKey)||'{}');
+   if(JSON.stringify(current[date])===JSON.stringify(op)){delete current[date];localStorage.setItem(zahnSyncQueueKey,JSON.stringify(current))}
+  }
+  const remote=[];let offset=0;
+  while(true){
+   const {data,error}=await invoiceCloud.from('zahn_invoice_records').select('id,payload').order('id').range(offset,offset+499);
+   if(error)throw error;
+   remote.push(...data);
+   if(data.length<500)break;
+   offset+=500;
+  }
+  const localNow=load(),ids=new Set(localNow.map(x=>x.id));let added=0;
+  for(const r of remote){if(!ids.has(r.id)&&r.payload?.id===r.id){localNow.push(r.payload);ids.add(r.id);added++}}
+  if(added)store(localNow);
+  const {data:days,error:dayError}=await invoiceCloud.from('zahn_day_closes').select('close_date,payload');
+  if(dayError)throw dayError;
+  const remaining=JSON.parse(localStorage.getItem(zahnSyncQueueKey)||'{}');
+  const localDays=loadDayCloses(),merged={};
+  for(const d of days)merged[d.close_date]=d.payload;
+  for(const [date,op] of Object.entries(remaining)){
+   if(op.action==='close')merged[date]=op.payload;
+   else delete merged[date];
+  }
+  // Before first sync on a device, preserve existing offline day closes.
+  if(!localStorage.getItem('zahn_sync_initialized_'+user.id)){
+   for(const [date,payload] of Object.entries(localDays)){
+    if(!(date in merged)&&!(date in remaining)){
+     merged[date]=payload;
+     zahnQueueDay(date,'close',payload);
+    }
+   }
+   localStorage.setItem('zahn_sync_initialized_'+user.id,'1');
+  }
+  localStorage.setItem(closeKey,JSON.stringify(merged));
+  zahnSyncStatus('Auto Sync OK · '+localNow.length+' invoices · '+Object.keys(merged).length+' closed days · '+new Date().toLocaleTimeString());
+  if(!$('saved').classList.contains('hidden'))saved();
+  if(!$('reports').classList.contains('hidden'))report();
+  if(!$('close').classList.contains('hidden'))dayClose();
+ }catch(e){zahnSyncStatus('Auto Sync pending: '+(e.message||e)+'. Local records remain saved.')}
+ finally{zahnSyncBusy=false}
+}
+window.addEventListener('online',zahnScheduleSync);
+window.addEventListener('focus',zahnScheduleSync);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)zahnScheduleSync()});
+if(invoiceCloud)invoiceCloud.auth.onAuthStateChange(()=>setTimeout(zahnScheduleSync,0));
+setInterval(()=>{if(!document.hidden)zahnAutoSync()},45000);
+setTimeout(zahnScheduleSync,2000);
 addItem();
 </script></body></html>
