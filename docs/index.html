@@ -3,7 +3,7 @@
 /* ZAHN premium white & gold theme */
 :root{background:#faf9f6;color:#29241c}body{background:#faf9f6;color:#29241c}header{background:#fff;border-bottom:2px solid #c3a16b;box-shadow:0 2px 12px #392a1310}h1{color:#a47b37}small{color:#806d4c}button{background:#fff;color:#77551d;border:1px solid #b99659;box-shadow:0 1px 3px #37280d0d}button.active,button.primary{background:#bd9550;color:#fff;border-color:#bd9550}button:hover{background:#f8f0df}button.active:hover,button.primary:hover{background:#ab823f}input,select{background:#fff;color:#27231d;border:1px solid #cfc5b5;box-shadow:0 1px 2px #00000008}input:focus,select:focus{outline:2px solid #d8b878;outline-offset:1px}input::placeholder{color:#817e79}label{color:#80602e}.panel{background:#fff;border:1px solid #e7ddcd;box-shadow:0 4px 20px #4230160b}.muted{color:#6d675d}.tot{color:#946a28}td,th{border-bottom:1px solid #e8e0d5}.pill{border:1px solid #bd995d;color:#8b652e;background:#fffaf0}footer{color:#756f66}
 @media print{header,nav,button,.no-print,footer,#new,#saved,#reports,#close{display:none!important}body{background:white;color:black}.panel{border:0;background:white;color:black}.hidden{display:none}#invoicePrint{display:block!important}main{padding:0}#invoicePrint table td,#invoicePrint table th{color:black;border-color:#aaa}}
-</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script></head><body><header><div><h1>ZAHN</h1><small>LUXURY PERFUMES · ESSENCE OF YOU</small></div><span class="pill">INVOICE MAKER PREVIEW</span></header><main><nav><button class="active" onclick="show('new',this)">New Invoice</button><button onclick="show('saved',this)">Saved Invoices</button><button onclick="show('reports',this)">Sales Reports</button><button onclick="show('close',this)">Day Close</button></nav>
+</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script></head><body><header><div><h1>ZAHN</h1><small>LUXURY PERFUMES · ESSENCE OF YOU</small></div><span class="pill">INVOICE MAKER PREVIEW</span></header><main><nav><button class="active" onclick="show('new',this)">New Invoice</button><button onclick="show('saved',this)">Saved Invoices</button><button onclick="show('reports',this)">Sales Reports</button><button onclick="show('close',this)">Day Close</button></nav>
 <section id="new"><div class="panel"><h2>New Invoice</h2><div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>Customer Name</label><input id="customer" placeholder="Optional"></div><div><label>Mobile Number</label><input id="phone" type="tel" placeholder="9665XXXXXXXX"></div><div><label>Payment</label><select id="payment"><option>Cash</option><option>Mada</option><option>Bank Transfer</option></select></div></div><h3>Perfumes</h3><datalist id="names"></datalist><div id="items"></div><button onclick="addItem()">+ Add Perfume</button><p class="right tot" id="total">SAR 0.00</p><button class="primary" onclick="save()">Save Invoice</button><p id="msg" role="status"></p></div></section>
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div></div></section>
 <section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><button onclick="report()">View Sales</button><div id="reportOutput"></div></div></section>
@@ -36,6 +36,7 @@ async function whatsapp(x){
  }
  const busy=document.getElementById('msg');if(busy)busy.textContent='Preparing PDF invoice link...';
  try{
+  await ensurePdfLibrary();
   const blob=buildPdf(x),path=user.id+'/'+crypto.randomUUID()+'.pdf';
   const up=await invoiceCloud.storage.from('zahn-invoice-pdfs').upload(path,blob,{contentType:'application/pdf',upsert:false});
   if(up.error)throw up.error;
@@ -48,6 +49,7 @@ async function whatsapp(x){
  }catch(e){alert('PDF link could not be created. Nothing sent. '+(e.message||e));if(busy)busy.textContent='PDF link failed. Try again.'}
 }
 function pdfById(id){sharePdf(load().find(x=>x.id===id))}
+async function ensurePdfLibrary(){if(window.jspdf?.jsPDF)return;const sources=['https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js'];for(const src of sources){try{await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.head.appendChild(script)});if(window.jspdf?.jsPDF)return}catch(e){}}throw new Error('PDF library could not load. Please try Safari or Chrome with an internet connection.')}
 function buildPdf(x){
  if(!window.jspdf?.jsPDF)throw new Error('PDF library did not load. Check your internet connection.');
  const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),gold=[155,115,47];
@@ -72,6 +74,7 @@ function buildPdf(x){
 async function sharePdf(x){
  if(!x)return;
  try{
+  await ensurePdfLibrary();
   const blob=buildPdf(x),file=new File([blob],x.id+'.pdf',{type:'application/pdf'});
   if(navigator.share&&navigator.canShare?.({files:[file]})){
    await navigator.share({files:[file],title:'ZAHN Invoice '+x.id});
