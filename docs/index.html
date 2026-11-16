@@ -15,7 +15,7 @@ const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString(
 $('date').value=$('from').value=$('to').value=$('closeDate').value=today();
 function show(id,btn){['new','saved','reports','close','cloud'].forEach(x=>$(x).classList.toggle('hidden',x!==id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===btn));$('invoicePrint').classList.add('hidden');if(id==='saved')saved();if(id==='reports')report();if(id==='close')dayClose();if(id==='cloud')cloudCheck()}
 function addItem(){rows.push({name:'',ml:'55',qty:1,price:''});draw()}
-const zahnTestInvoiceIds=new Set(['ZHN-0000001','ZHN-1794740122760','ZHN-1794741660021','ZHN-1794743804134','ZHN-1794744989271']);
+const zahnTestInvoiceIds=new Set(['ZHN-1794730221579','ZHN-1794739836470','ZHN-0000001','ZHN-1794740122760','ZHN-1794741660021','ZHN-1794743804134','ZHN-1794744989271']);
 function zahnIsTestInvoice(x){return zahnTestInvoiceIds.has(x.id)||x.invoicePurpose==='test'}
 function zahnSalesInvoices(){return load().filter(x=>!zahnIsTestInvoice(x))}
 function perfumeNames(){const names=new Map(Array.from({length:70},(_,i)=>{const name='Secret '+String(i+1).padStart(2,'0');return [name.toLocaleLowerCase(),name]}));load().forEach(inv=>(inv.items||[]).forEach(item=>{const name=String(item.name||'').trim();if(name&&!names.has(name.toLocaleLowerCase()))names.set(name.toLocaleLowerCase(),name)}));return [...names.values()].sort((a,b)=>a.localeCompare(b))}
