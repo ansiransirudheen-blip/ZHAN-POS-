@@ -20,35 +20,50 @@ function suggestPerfumes(input,index){const host=input.closest('.perfume-field')
 function hidePerfumeSuggestions(input){setTimeout(()=>{const list=input.closest('.perfume-field')?.querySelector('.perfume-suggestions');if(list)list.hidden=true},180)}
 function draw(){const names=perfumeNames();$('names').innerHTML=names.map(x=>'<option value="'+esc(x)+'">').join('');$('items').innerHTML=rows.map((r,i)=>'<div class="item"><div class="perfume-field"><label>Perfume Name<input list="names" autocomplete="off" value="'+esc(r.name)+'" oninput="edit('+i+',\'name\',this.value);suggestPerfumes(this,'+i+')" onfocus="suggestPerfumes(this,'+i+')" onblur="hidePerfumeSuggestions(this)" placeholder="Type perfume name"></label><div class="perfume-suggestions" hidden></div></div><label>ML<input type="number" min="1" value="'+esc(r.ml)+'" oninput="edit('+i+',\'ml\',this.value)"></label><label>Qty<input type="number" min="1" value="'+esc(r.qty)+'" oninput="edit('+i+',\'qty\',this.value)"></label><label>Price (SAR)<input type="number" min="0" step=".01" value="'+esc(r.price)+'" oninput="edit('+i+',\'price\',this.value)"></label><button onclick="rows.splice('+i+',1);draw()">Remove</button></div>').join('');total()}
 function edit(i,k,v){rows[i][k]=v;total()}function money(n){return Math.round((Number(n)+Number.EPSILON)*100)/100}function subtotalAmount(){return money(rows.reduce((s,r)=>s+Number(r.qty||0)*Number(r.price||0),0))}function discountAmount(){return Number($('discount').value)}function total(){const subtotal=subtotalAmount(),discount=discountAmount(),valid=Number.isFinite(discount)&&discount>=0&&discount<=subtotal;$('subtotal').textContent=fmt(subtotal);$('discountShown').textContent=fmt(valid?discount:0);$('total').textContent=valid?fmt(money(subtotal-discount)):'Invalid discount';return valid}
+const zahnPendingInvoiceKey='zahn_pending_invoice_v1';
 let zahnSaving=false;
+function zahnPendingNotice(){
+ if(localStorage.getItem(zahnPendingInvoiceKey))$('msg').innerHTML='An earlier invoice needs confirmation. Recover it before creating another bill. <button onclick="save()">Recover Pending Invoice</button>';
+}
 async function save(){
  if(zahnSaving)return;
+ let pending;
+ try{pending=JSON.parse(localStorage.getItem(zahnPendingInvoiceKey)||'null')}catch(e){$('msg').textContent='Pending invoice could not be read. Do not clear browser storage.';return}
+ let inv;
+ if(pending){inv=pending.invoice}else{
  let items=rows.map(r=>({...r,name:r.name.trim(),ml:Number(r.ml),qty:Number(r.qty),price:Number(r.price)}));
  if(!items.length||items.some(r=>!r.name||!(r.ml>0)||!(r.qty>0)||!(r.price>=0))){$('msg').textContent='Enter valid perfume name, ML, quantity and price.';return}
  if(!total()){$('msg').textContent='Discount must be between SAR 0 and the perfume subtotal.';return}
  const subtotal=money(items.reduce((s,r)=>s+r.qty*r.price,0)),discount=money(discountAmount());
  let invoices=load(),requestId=crypto.randomUUID();
- let inv={id:'',client_request_id:requestId,date:$('date').value,customer:$('customer').value.trim(),phone:$('phone').value.trim(),payment:$('payment').value,items,subtotal,discount,total:money(subtotal-discount),createdAt:new Date().toISOString()};
+ inv={id:'',client_request_id:requestId,date:$('date').value,customer:$('customer').value.trim(),phone:$('phone').value.trim(),payment:$('payment').value,items,subtotal,discount,total:money(subtotal-discount),createdAt:new Date().toISOString()};
  if(!inv.date){$('msg').textContent='Choose invoice date.';return}
  if(loadDayCloses()[inv.date]){$('msg').textContent='This date is closed. Reopen it in Day Close before saving an invoice.';return}
+ }
  zahnSaving=true;
  try{
-  if(navigator.onLine){
+  if(pending?.mode==='online'&&!navigator.onLine)throw Error('Reconnect to recover the pending online invoice');
+  if(pending?.mode==='online'||(!pending&&navigator.onLine)){
    if(!invoiceCloud)throw new Error('Cloud unavailable; retry when connected.');
    const {data:{user},error:authError}=await invoiceCloud.auth.getUser();
    if(authError||!user)throw new Error('Sign in to Cloud Backup before saving online invoices.');
-   const {data,error}=await invoiceCloud.rpc('zahn_create_numbered_invoice',{p_request_id:requestId,p_invoice_date:inv.date,p_payload:inv});
+   if(pending&&pending.owner!==user.id)throw Error('Sign in with the account that started this invoice');
+   if(!pending){pending={mode:'online',owner:user.id,invoice:inv};localStorage.setItem(zahnPendingInvoiceKey,JSON.stringify(pending))}
+   const {data,error}=await invoiceCloud.rpc('zahn_create_numbered_invoice',{p_request_id:inv.client_request_id,p_invoice_date:inv.date,p_payload:inv});
    if(error)throw error;
+   if(typeof data!=='string'||!/^ZHN-[A-Za-z0-9-]+$/.test(data))throw Error('Invoice confirmation was invalid');
    inv.id=data;
   }else{
-   inv.id='ZHN-OFF-'+requestId;
+   if(!pending){pending={mode:'offline',invoice:inv};localStorage.setItem(zahnPendingInvoiceKey,JSON.stringify(pending))}
+   inv.id='ZHN-OFF-'+inv.client_request_id;
   }
-  invoices=load();
+  const invoices=load();
   if(!invoices.some(x=>x.id===inv.id))invoices.push(inv);
   store(invoices);
+  localStorage.removeItem(zahnPendingInvoiceKey);
   last=inv;zahnScheduleSync();rows=[];$('discount').value='0';addItem();
   $('msg').innerHTML='Invoice saved: '+esc(inv.id)+(inv.id.startsWith('ZHN-OFF-')?' (offline provisional number)':'')+' <button onclick="printInvoice(last)">Print / Save PDF</button> <button onclick="whatsapp(last)">WhatsApp Text</button> <button onclick="sharePdf(last)">Share PDF to WhatsApp</button>';
- }catch(e){$('msg').textContent='Invoice not confirmed: '+(e.message||e)+'. Do not clear this form; check Saved Invoices before retrying.'}
+ }catch(e){$('msg').textContent='Invoice not confirmed: '+(e.message||e)+'. Retry Save to recover the same invoice before creating a new bill. Do not clear browser storage.'}
  finally{zahnSaving=false}
 }
 function saved(){let a=load().slice().reverse();$('savedList').innerHTML=a.length?a.map(x=>'<div class="panel"><b>'+esc(x.id)+'</b> · '+esc(x.date)+' · '+fmt(x.total)+' · '+esc(x.customer)+' <button onclick="printById(\''+esc(x.id)+'\')">Print / PDF</button> <button onclick="sendById(\''+esc(x.id)+'\')">WhatsApp Text</button> <button onclick="pdfById(\''+esc(x.id)+'\')">Share PDF</button></div>').join(''):'No invoices saved'}
@@ -267,11 +282,12 @@ function zahnConfirmJsonRestore(){
   let invoicesAdded=0,daysAdded=0;
   for(const x of b.invoices){if(!ids.has(x.id)){local.push(x);ids.add(x.id);invoicesAdded++}}
   for(const [date,entry] of Object.entries(b.dayCloses)){
-   if(!Object.prototype.hasOwnProperty.call(days,date)&&!Object.prototype.hasOwnProperty.call(pending,date)){days[date]=entry;daysAdded++}
+   if(!Object.prototype.hasOwnProperty.call(days,date)&&!Object.prototype.hasOwnProperty.call(pending,date)){days[date]=entry;pending[date]={action:'restore',payload:entry};daysAdded++}
   }
   // Stage all writes first; no existing invoice or day-close is overwritten.
   const invoiceJSON=JSON.stringify(local),dayJSON=JSON.stringify(days);
   localStorage.setItem('zahn_simple_invoices_v1',invoiceJSON);
+  localStorage.setItem(zahnSyncQueueKey,JSON.stringify(pending));
   localStorage.setItem(closeKey,dayJSON);
   zahnRestorePreview=null;$('zahnJsonRestoreConfirm').disabled=true;$('zahnJsonRestoreFile').value='';
   status.textContent='Restore completed: '+invoicesAdded+' missing invoices and '+daysAdded+' missing closed days added. Existing records preserved.';
@@ -349,7 +365,7 @@ async function zahnAutoSync(){
   for(const [date,op] of Object.entries(queued)){
    let result;
    if(op.action==='reopen')result=await invoiceCloud.from('zahn_day_closes').delete().eq('close_date',date).eq('owner_id',user.id);
-   else result=await invoiceCloud.from('zahn_day_closes').upsert({close_date:date,owner_id:user.id,payload:op.payload},{onConflict:'close_date,owner_id'});
+   else result=await invoiceCloud.from('zahn_day_closes').upsert({close_date:date,owner_id:user.id,payload:op.payload},{onConflict:'close_date,owner_id',ignoreDuplicates:op.action==='restore'});
    if(result.error)throw result.error;
    const current=JSON.parse(localStorage.getItem(zahnSyncQueueKey)||'{}');
    if(JSON.stringify(current[date])===JSON.stringify(op)){delete current[date];localStorage.setItem(zahnSyncQueueKey,JSON.stringify(current))}
@@ -371,7 +387,7 @@ async function zahnAutoSync(){
   const localDays=loadDayCloses(),merged={};
   for(const d of days)merged[d.close_date]=d.payload;
   for(const [date,op] of Object.entries(remaining)){
-   if(op.action==='close')merged[date]=op.payload;
+   if(op.action==='close'||op.action==='restore')merged[date]=op.payload;
    else delete merged[date];
   }
   // Before first sync on a device, preserve existing offline day closes.
@@ -399,4 +415,5 @@ if(invoiceCloud)invoiceCloud.auth.onAuthStateChange(()=>setTimeout(zahnScheduleS
 setInterval(()=>{if(!document.hidden)zahnAutoSync()},45000);
 setTimeout(zahnScheduleSync,2000);
 addItem();
+zahnPendingNotice();
 </script></body></html>
