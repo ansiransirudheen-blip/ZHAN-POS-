@@ -9,7 +9,7 @@
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div><details ontoggle="if(this.open)zahnShowTestArchive()"><summary>Test Bills Archive — excluded from sales</summary><div id="zahnTestArchive"></div></details></div></section>
 <section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div></div></section>
 <section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><div class="action-row"><button onclick="dayClose()">View Day Summary</button><button class="primary" onclick="confirmDayClose()">Confirm Day Close</button><button onclick="reopenDay()">Reopen Day</button><button onclick="exportDayCloseCsv()">Export Day Close CSV</button></div><div id="closeOutput"></div></div></section>
-<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p><label for="zahnJsonRestoreFile">Restore JSON Backup (adds missing records only)</label><input id="zahnJsonRestoreFile" type="file" accept=".json,application/json" onchange="zahnPreviewJsonRestore(this)"></p><p id="zahnJsonRestoreStatus" role="status" class="muted">Choose a ZAHN JSON backup file to preview it. No changes until you confirm.</p><button id="zahnJsonRestoreConfirm" onclick="zahnConfirmJsonRestore()" disabled>Confirm Restore Missing Records</button><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer>Invoices save in this browser and sync while signed in and online. Keep a separate JSON backup. Offline invoices use provisional unique numbers. Anyone with a PDF link can view that invoice while the service and file remain available. New invoices do not charge VAT. Shop address and contact details have not been configured.</footer></main>
+<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button id="cloudChangeEmailButton" onclick="cloudChangeEmail()">Change Login Email</button></p><p id="cloudEmailChangeStatus" role="status" class="muted">Change the email of your existing account while keeping its invoices.</p><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p><label for="zahnJsonRestoreFile">Restore JSON Backup (adds missing records only)</label><input id="zahnJsonRestoreFile" type="file" accept=".json,application/json" onchange="zahnPreviewJsonRestore(this)"></p><p id="zahnJsonRestoreStatus" role="status" class="muted">Choose a ZAHN JSON backup file to preview it. No changes until you confirm.</p><button id="zahnJsonRestoreConfirm" onclick="zahnConfirmJsonRestore()" disabled>Confirm Restore Missing Records</button><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer>Invoices save in this browser and sync while signed in and online. Keep a separate JSON backup. Offline invoices use provisional unique numbers. Anyone with a PDF link can view that invoice while the service and file remain available. New invoices do not charge VAT. Shop address and contact details have not been configured.</footer></main>
 <script>
 const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'}),fmt=n=>'SAR '+Number(n||0).toFixed(2),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),load=()=>{try{return JSON.parse(localStorage.getItem('zahn_simple_invoices_v1')||'[]')}catch{return []}},store=x=>localStorage.setItem('zahn_simple_invoices_v1',JSON.stringify(x));let rows=[],last=null;
 $('date').value=$('from').value=$('to').value=$('closeDate').value=today();
@@ -235,6 +235,33 @@ async function cloudLogin(){
  const {error}=await invoiceCloud.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});
  alert(error?'Login email failed: '+error.message:'Check your email for the login link, open it in this browser, then check login.');
 }
+let cloudEmailChangeBusy=false;
+async function cloudChangeEmail(){
+ if(cloudEmailChangeBusy)return;
+ const status=$('cloudEmailChangeStatus'),button=$('cloudChangeEmailButton');
+ if(!invoiceCloud){status.textContent='Cloud library unavailable.';return}
+ cloudEmailChangeBusy=true;button.disabled=true;
+ try{
+  const {data:current,error:checkError}=await invoiceCloud.auth.getUser();
+  if(checkError||!current?.user){status.textContent='Sign in to your existing account first.';return}
+  const entered=prompt('New login email for this same account:');
+  if(entered===null)return;
+  const email=entered.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status.textContent='Enter a valid email address.';return}
+  if(email.toLowerCase()===(current.user.email||'').toLowerCase()){status.textContent='This is already your login email.';return}
+  if(!confirm('Change login email from '+current.user.email+' to '+email+'? Your account and invoices stay the same.'))return;
+  status.textContent='Requesting email change...';
+  const {data,error}=await invoiceCloud.auth.updateUser({email},{emailRedirectTo:location.origin+location.pathname});
+  if(error)throw error;
+  if(data?.user?.email?.toLowerCase()===email.toLowerCase()){
+   status.textContent='Login email updated to '+email+'.';await cloudCheck();
+  }else{
+   status.textContent='Email change requested for '+email+'. Check both your current and new inboxes and follow the confirmation links. Then use Check Login to verify the new email. Do not sign out yet.';
+  }
+ }catch(error){status.textContent='Email change failed: '+(error.message||'Please try again later.')}
+ finally{cloudEmailChangeBusy=false;button.disabled=false}
+}
+
 async function cloudSignOut(){if(!invoiceCloud)return;await invoiceCloud.auth.signOut();await cloudCheck()}
 
 function zahnDownloadJsonBackup(){
