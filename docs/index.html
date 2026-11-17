@@ -4,12 +4,21 @@
 :root{background:#faf9f6;color:#29241c}body{background:#faf9f6;color:#29241c}header{background:#fff;border-bottom:2px solid #c3a16b;box-shadow:0 2px 12px #392a1310}h1{color:#a47b37}small{color:#806d4c}button{background:#fff;color:#77551d;border:1px solid #b99659;box-shadow:0 1px 3px #37280d0d}button.active,button.primary{background:#bd9550;color:#fff;border-color:#bd9550}button:hover{background:#f8f0df}button.active:hover,button.primary:hover{background:#ab823f}input,select{background:#fff;color:#27231d;border:1px solid #cfc5b5;box-shadow:0 1px 2px #00000008}input:focus,select:focus{outline:2px solid #d8b878;outline-offset:1px}input::placeholder{color:#817e79}label{color:#80602e}.panel{background:#fff;border:1px solid #e7ddcd;box-shadow:0 4px 20px #4230160b}.muted{color:#6d675d}.tot{color:#946a28}td,th{border-bottom:1px solid #e8e0d5}.pill{border:1px solid #bd995d;color:#8b652e;background:#fffaf0}footer{color:#756f66}
 .perfume-field{position:relative}.perfume-suggestions{position:absolute;top:100%;left:0;right:0;z-index:20;background:#fff;border:1px solid #c9a66b;border-radius:8px;box-shadow:0 8px 18px #0002;max-height:230px;overflow:auto}.perfume-suggestions[hidden]{display:none}.perfume-suggestion{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #eee4d3;border-radius:0;background:#fff;color:#312a20;padding:12px;font-size:15px}.perfume-suggestion:hover,.perfume-suggestion:focus{background:#fff5e3}.brand-header{display:flex;align-items:center;gap:12px}.brand-logo{width:68px;height:68px;object-fit:contain;border-radius:7px}.invoice-logo{width:115px;height:115px;object-fit:contain}.invoice-paper{background:#fff;color:#2b251d;max-width:900px;margin:auto;padding:28px;border-top:5px solid #b58d49}.invoice-top{display:flex;justify-content:space-between;gap:20px;align-items:start;padding-bottom:22px;border-bottom:1px solid #dbcaa9}.invoice-brand{font-size:38px;font-weight:800;letter-spacing:5px;color:#a47b37}.invoice-tag{font-size:10px;letter-spacing:2px;color:#7d6948}.invoice-heading{text-align:right;display:flex;flex-direction:column;gap:8px;overflow-wrap:anywhere}.invoice-heading strong{font-size:23px;color:#a47b37}.invoice-meta{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:25px 0}.invoice-meta>div{display:flex;flex-direction:column;gap:6px}.invoice-label{font-size:10px;letter-spacing:2px;color:#94733f;font-weight:750}.invoice-table-wrap{overflow-x:auto}.invoice-table{min-width:540px}.invoice-table th{background:#f7f0e4;color:#72542b;font-size:12px}.invoice-table td{font-size:13px}.invoice-bottom{display:flex;justify-content:space-between;gap:20px;margin-top:28px}.invoice-note{font-size:12px;line-height:1.8;color:#806d4e}.invoice-totals{min-width:260px;flex:0 0 45%}.invoice-totals>div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;font-size:13px}.invoice-totals .invoice-grand{background:#f7f0e4;padding:14px 10px;font-weight:800;color:#8b6329}.invoice-disclaimer{font-size:10px;color:#837a6c;border-top:1px solid #e5d7bd;margin-top:38px;padding-top:12px}@media(max-width:600px){.invoice-paper{padding:14px}.invoice-bottom{flex-direction:column}.invoice-totals{min-width:0;flex:auto}.invoice-brand{font-size:28px}.invoice-heading strong{font-size:17px}}@media print{.invoice-paper{max-width:none;padding:12mm 8mm;border-top:4px solid #b58d49}.invoice-table-wrap{overflow:visible}.invoice-table{min-width:0}.invoice-table th,.invoice-table td{font-size:10px}.invoice-meta,.invoice-bottom{break-inside:avoid}header,nav,button,.no-print,footer,#new,#saved,#reports,#close{display:none!important}body{background:white;color:black}.panel{border:0;background:white;color:black}.hidden{display:none}#invoicePrint{display:block!important}main{padding:0}#invoicePrint table td,#invoicePrint table th{color:black;border-color:#aaa}}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin:15px 0}.summary-tile{background:#fffaf0;border:1px solid #e7d7b8;border-radius:10px;padding:14px}.summary-tile strong{display:block;font-size:20px;color:#936a28;margin-top:6px}.report-table{overflow-x:auto}.report-table table{min-width:530px}.action-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.action-row button{flex:0 1 auto}.status-note{padding:12px;border:1px solid #d9c69f;border-radius:9px;background:#fffaf0}@media print{.summary-grid{grid-template-columns:repeat(3,1fr)}}
-</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script></head><body><header><div class="brand-header"><img src="zahn-logo.webp" alt="Original ZAHN logo" class="brand-logo"><div><h1>ZAHN</h1><small>LUXURY PERFUMES · ESSENCE OF YOU</small></div></div><span class="pill">INVOICE</span></header><main><nav><button class="active" onclick="show('new',this)">New Invoice</button><button onclick="show('saved',this)">Saved Invoices</button><button onclick="show('reports',this)">Sales Reports</button><button onclick="show('close',this)">Day Close</button><button onclick="show('cloud',this)">Cloud Backup</button></nav>
+</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script><style>
+.zahn-pin-locked body>header,.zahn-pin-locked body>main{display:none!important}
+#zahnPinGate:not([hidden]){position:fixed;inset:0;z-index:100000;background:#faf9f6;display:grid;place-items:center;padding:20px;overflow:auto}
+.zahn-pin-card{width:min(100%,420px);text-align:center;background:#fff}
+#zahnPinEntry{text-align:center;font-size:26px;letter-spacing:5px}
+#zahnPinSettings{max-width:480px;width:calc(100% - 28px);max-height:90vh;overflow:auto;border:1px solid #b99659;border-radius:16px;padding:24px;background:#fff;color:#29241c}
+#zahnPinSettings::backdrop{background:#0009}
+#zahnPinRecoveryCode{display:block;overflow-wrap:anywhere;background:#f7f1e4;padding:12px;font-size:16px}
+@media print{.zahn-pin-locked body>*{display:none!important}#zahnPinSettings,#zahnPinGate{display:none!important}}
+</style><script>try{if(localStorage.getItem('zahn_device_pin_v1'))document.documentElement.classList.add('zahn-pin-locked')}catch(e){document.documentElement.classList.add('zahn-pin-locked')}</script></head><body><header><div class="brand-header"><img src="zahn-logo.webp" alt="Original ZAHN logo" class="brand-logo"><div><h1>ZAHN</h1><small>LUXURY PERFUMES · ESSENCE OF YOU</small></div></div><span class="pill">INVOICE</span></header><main><nav><button class="active" onclick="show('new',this)">New Invoice</button><button onclick="show('saved',this)">Saved Invoices</button><button onclick="show('reports',this)">Sales Reports</button><button onclick="show('close',this)">Day Close</button><button onclick="show('cloud',this)">Cloud Backup</button><button id="zahnPinLockNow" hidden onclick="zahnPinLock()">Lock Now</button></nav>
 <section id="new"><div class="panel"><h2>New Invoice</h2><div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>Customer Name</label><input id="customer" placeholder="Optional"></div><div><label>Mobile Number</label><input id="phone" type="tel" placeholder="9665XXXXXXXX"></div><div><label>Payment</label><select id="payment"><option>Cash</option><option>Mada</option><option>Bank Transfer</option></select></div></div><h3>Perfumes</h3><datalist id="names"></datalist><div id="items"></div><button onclick="addItem()">+ Add Perfume</button><div class="grid"><div><label for="discount">Discount (SAR)</label><input id="discount" type="number" min="0" step="0.01" value="" oninput="total()"></div><div class="right"><label>Perfume Subtotal</label><strong id="subtotal">SAR 0.00</strong></div></div><p class="right muted">Discount: <span id="discountShown">SAR 0.00</span></p><p class="right tot" id="total">SAR 0.00</p><button class="primary" onclick="save()">Save Invoice</button><p id="msg" role="status"></p></div></section>
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div><details ontoggle="if(this.open)zahnShowTestArchive()"><summary>Test Bills Archive — excluded from sales</summary><div id="zahnTestArchive"></div></details></div></section>
 <section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div></div></section>
 <section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><div class="action-row"><button onclick="dayClose()">View Day Summary</button><button class="primary" onclick="confirmDayClose()">Confirm Day Close</button><button onclick="reopenDay()">Reopen Day</button><button onclick="exportDayCloseCsv()">Export Day Close CSV</button></div><div id="closeOutput"></div></div></section>
-<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button id="cloudChangeEmailButton" onclick="cloudChangeEmail()">Change Login Email</button></p><p id="cloudEmailChangeStatus" role="status" class="muted">Change the email of your existing account while keeping its invoices.</p><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p><label for="zahnJsonRestoreFile">Restore JSON Backup (adds missing records only)</label><input id="zahnJsonRestoreFile" type="file" accept=".json,application/json" onchange="zahnPreviewJsonRestore(this)"></p><p id="zahnJsonRestoreStatus" role="status" class="muted">Choose a ZAHN JSON backup file to preview it. No changes until you confirm.</p><button id="zahnJsonRestoreConfirm" onclick="zahnConfirmJsonRestore()" disabled>Confirm Restore Missing Records</button><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer>Invoices save in this browser and sync while signed in and online. Keep a separate JSON backup. Offline invoices use provisional unique numbers. Anyone with a PDF link can view that invoice while the service and file remain available. New invoices do not charge VAT. Shop address and contact details have not been configured.</footer></main>
+<section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><div class="panel"><h3>Device PIN</h3><p id="zahnPinState"></p><button id="zahnPinSettingsButton" onclick="zahnPinOpenSetup()">Set Device PIN</button></div><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button id="cloudChangeEmailButton" onclick="cloudChangeEmail()">Change Login Email</button></p><p id="cloudEmailChangeStatus" role="status" class="muted">Change the email of your existing account while keeping its invoices.</p><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p><label for="zahnJsonRestoreFile">Restore JSON Backup (adds missing records only)</label><input id="zahnJsonRestoreFile" type="file" accept=".json,application/json" onchange="zahnPreviewJsonRestore(this)"></p><p id="zahnJsonRestoreStatus" role="status" class="muted">Choose a ZAHN JSON backup file to preview it. No changes until you confirm.</p><button id="zahnJsonRestoreConfirm" onclick="zahnConfirmJsonRestore()" disabled>Confirm Restore Missing Records</button><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer>Invoices save in this browser and sync while signed in and online. Keep a separate JSON backup. Offline invoices use provisional unique numbers. Anyone with a PDF link can view that invoice while the service and file remain available. New invoices do not charge VAT. Shop address and contact details have not been configured.</footer></main>
 <script>
 const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Riyadh'}),fmt=n=>'SAR '+Number(n||0).toFixed(2),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),load=()=>{try{return JSON.parse(localStorage.getItem('zahn_simple_invoices_v1')||'[]')}catch{return []}},store=x=>localStorage.setItem('zahn_simple_invoices_v1',JSON.stringify(x));let rows=[],last=null;
 $('date').value=$('from').value=$('to').value=$('closeDate').value=today();
@@ -447,4 +456,94 @@ setInterval(()=>{if(!document.hidden)zahnAutoSync()},45000);
 setTimeout(zahnScheduleSync,2000);
 addItem();
 zahnPendingNotice();
+</script>
+<div id="zahnPinGate" hidden role="dialog" aria-modal="true" aria-labelledby="zahnPinGateTitle"><div class="panel zahn-pin-card">
+<img src="zahn-logo.webp" alt="ZAHN" width="80" height="80"><h2 id="zahnPinGateTitle">Unlock ZAHN POS</h2>
+<form onsubmit="zahnPinUnlock(event)"><label id="zahnPinEntryLabel" for="zahnPinEntry">Your PIN</label><input id="zahnPinEntry" type="password" inputmode="numeric" maxlength="6" autocomplete="off" required><p><button id="zahnPinUnlock" class="primary" type="submit">Unlock</button></p></form>
+<p id="zahnPinGateStatus" role="status"></p><button id="zahnPinRecoveryToggle" type="button" onclick="zahnPinToggleRecovery()">Forgot PIN? Use recovery code</button></div></div>
+<dialog id="zahnPinSettings" aria-labelledby="zahnPinSettingsTitle"><h2 id="zahnPinSettingsTitle">Device PIN</h2>
+<p>Use 4 or 6 digits. Six digits is recommended. This lock applies to this browser only.</p>
+<form id="zahnPinSetupForm" onsubmit="zahnPinSave(event)">
+<div id="zahnPinCurrentWrap"><label for="zahnPinCurrent">Current PIN</label><input id="zahnPinCurrent" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></div>
+<label for="zahnPinNew">New PIN</label><input id="zahnPinNew" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
+<label for="zahnPinConfirm">Confirm new PIN</label><input id="zahnPinConfirm" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
+<p><strong>Save this recovery code privately.</strong> It restores access if you forget this PIN. A new PIN replaces the previous recovery code.</p><code id="zahnPinRecoveryCode"></code>
+<label><input id="zahnPinRecoverySaved" type="checkbox" style="width:auto"> I saved the recovery code somewhere safe.</label>
+<p id="zahnPinSetupStatus" role="status"></p><p><button id="zahnPinSave" class="primary" type="submit">Save and Lock</button> <button id="zahnPinRemove" type="button" onclick="zahnPinSave(event,true)">Remove PIN</button> <button type="button" onclick="if(!zahnPinBusy){document.getElementById('zahnPinSetupForm').reset();zahnPinSetupRecovery='';document.getElementById('zahnPinRecoveryCode').textContent='';document.getElementById('zahnPinSettings').close()}">Cancel</button></p></form>
+<p class="muted">This is a local screen lock, not encryption of stored invoices. Keep the tablet screen lock enabled. Cloud access still uses your email login.</p></dialog>
+<script>
+const zahnPinKey='zahn_device_pin_v1';
+let zahnPinBusy=false,zahnPinRecovery=false,zahnPinLastActive=Date.now(),zahnPinSetupRecovery='';
+function zahnPinRead(){const raw=localStorage.getItem(zahnPinKey);if(!raw)return null;const r=JSON.parse(raw);if(r.v!==1||!r.salt||!r.hash||!r.recoveryHash)throw Error('PIN settings could not be read. Keep browser data and contact support.');return r}
+function zahnPinHex(bytes){return Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('')}
+async function zahnPinHash(value,salt){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(value),'PBKDF2',false,['deriveBits']);return zahnPinHex(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:600000,hash:'SHA-256'},key,256)))}
+function zahnPinSetLocked(locked){
+ document.documentElement.classList.toggle('zahn-pin-locked',locked);
+ document.querySelector('main').inert=locked;document.querySelector('header').inert=locked;
+ $('zahnPinGate').hidden=!locked;
+ if(locked){if($('zahnPinSettings').open)$('zahnPinSettings').close();$('zahnPinSetupForm').reset();zahnPinSetupRecovery='';$('zahnPinRecoveryCode').textContent='';$('zahnPinEntry').value='';zahnPinRecovery=false;zahnPinGateLabels();setTimeout(()=>$('zahnPinEntry').focus(),0)}
+ else zahnPinLastActive=Date.now();
+}
+function zahnPinGateLabels(){$('zahnPinEntry').type=zahnPinRecovery?'text':'password';$('zahnPinEntry').inputMode=zahnPinRecovery?'text':'numeric';$('zahnPinEntry').maxLength=zahnPinRecovery?32:6;$('zahnPinEntryLabel').textContent=zahnPinRecovery?'Recovery code':'Your PIN';$('zahnPinRecoveryToggle').textContent=zahnPinRecovery?'Use PIN':'Forgot PIN? Use recovery code';$('zahnPinUnlock').textContent=zahnPinRecovery?'Recover access':'Unlock';$('zahnPinEntry').value=''}
+function zahnPinToggleRecovery(){if(zahnPinBusy)return;zahnPinRecovery=!zahnPinRecovery;zahnPinGateLabels();$('zahnPinGateStatus').textContent=zahnPinRecovery?'Enter the recovery code saved when you set this PIN. Recovery removes this device PIN.':' ';$('zahnPinEntry').focus()}
+function zahnPinLock(){try{if(zahnPinRead())zahnPinSetLocked(true);else zahnPinOpenSetup()}catch(e){$('zahnPinGateStatus').textContent=e.message;zahnPinSetLocked(true)}}
+async function zahnPinVerify(value,recovery=false){
+ const r=zahnPinRead();if(!r)throw Error('No PIN is set.');
+ if(r.until>Date.now())throw Error('Too many attempts. Try again in '+Math.ceil((r.until-Date.now())/1000)+' seconds.');
+ const hash=await zahnPinHash(recovery?value.replace(/[^a-z0-9]/gi,'').toUpperCase():value,r.salt);
+ if(hash!==(recovery?r.recoveryHash:r.hash)){
+  r.failures=(r.failures||0)+1;if(r.failures>=5){r.until=Date.now()+60000;r.failures=0}
+  localStorage.setItem(zahnPinKey,JSON.stringify(r));throw Error(r.until>Date.now()?'Too many attempts. Wait 60 seconds.':'Incorrect '+(recovery?'recovery code.':'PIN.'));
+ }
+ r.failures=0;r.until=0;localStorage.setItem(zahnPinKey,JSON.stringify(r));return r;
+}
+async function zahnPinUnlock(event){
+ event.preventDefault();if(zahnPinBusy)return;zahnPinBusy=true;$('zahnPinUnlock').disabled=true;
+ const recovery=zahnPinRecovery;
+ try{
+  await zahnPinVerify($('zahnPinEntry').value,recovery);
+  if(recovery)localStorage.removeItem(zahnPinKey);
+  $('zahnPinEntry').value='';zahnPinSetLocked(false);zahnPinRefresh();
+  if(recovery){zahnPinOpenSetup();$('zahnPinSetupStatus').textContent='Access recovered. Set a new PIN for this device.'}
+ }catch(e){$('zahnPinGateStatus').textContent=e.message;$('zahnPinEntry').value=''}
+ finally{zahnPinBusy=false;$('zahnPinUnlock').disabled=false}
+}
+function zahnPinRefresh(){const r=zahnPinRead();$('zahnPinState').textContent=r?'PIN enabled on this browser. Locks on opening and after 5 minutes without activity.':'No device PIN set.';$('zahnPinSettingsButton').textContent=r?'Change / Remove PIN':'Set Device PIN';$('zahnPinLockNow').hidden=!r}
+function zahnPinOpenSetup(){
+ if(document.documentElement.classList.contains('zahn-pin-locked'))return;
+ const r=zahnPinRead();$('zahnPinSetupForm').reset();$('zahnPinCurrentWrap').hidden=!r;$('zahnPinRemove').hidden=!r;
+ zahnPinSetupRecovery=zahnPinHex(crypto.getRandomValues(new Uint8Array(16))).toUpperCase();
+ $('zahnPinRecoveryCode').textContent=zahnPinSetupRecovery.match(/.{1,4}/g).join('-');
+ $('zahnPinSetupStatus').textContent='';$('zahnPinSettings').showModal();
+}
+async function zahnPinSave(event,remove=false){
+ event.preventDefault();if(zahnPinBusy)return;zahnPinBusy=true;$('zahnPinSave').disabled=true;$('zahnPinRemove').disabled=true;
+ try{
+  const current=zahnPinRead(),pin=$('zahnPinNew').value;
+  if(!remove){
+   if(!/^(?:[0-9]{4}|[0-9]{6})$/.test(pin))throw Error('Choose exactly 4 or 6 digits. Six digits is recommended.');
+   if(pin!==$('zahnPinConfirm').value)throw Error('New PINs do not match.');
+   if(!$('zahnPinRecoverySaved').checked)throw Error('Save the recovery code and tick the checkbox first.');
+  }
+  if(current)await zahnPinVerify($('zahnPinCurrent').value);
+  if(remove){
+   if(!confirm('Remove the PIN lock from this browser?'))return;
+   localStorage.removeItem(zahnPinKey);
+  }else{
+   const salt=zahnPinHex(crypto.getRandomValues(new Uint8Array(16)));
+   const hash=await zahnPinHash(pin,salt),recoveryHash=await zahnPinHash(zahnPinSetupRecovery,salt);
+   localStorage.setItem(zahnPinKey,JSON.stringify({v:1,salt,hash,recoveryHash,failures:0,until:0}));
+  }
+  $('zahnPinSetupForm').reset();zahnPinSetupRecovery='';$('zahnPinRecoveryCode').textContent='';$('zahnPinSettings').close();zahnPinRefresh();
+  if(!remove)zahnPinLock();
+ }catch(e){$('zahnPinSetupStatus').textContent=e.message}
+ finally{zahnPinBusy=false;$('zahnPinSave').disabled=false;$('zahnPinRemove').disabled=false}
+}
+function zahnPinIdleCheck(){if(document.documentElement.classList.contains('zahn-pin-locked'))return;try{if(zahnPinRead()&&Date.now()-zahnPinLastActive>=300000)zahnPinLock()}catch(e){zahnPinSetLocked(true);$('zahnPinGateStatus').textContent=e.message}}
+for(const event of ['pointerdown','keydown','touchstart'])document.addEventListener(event,()=>{zahnPinIdleCheck();if(!document.documentElement.classList.contains('zahn-pin-locked'))zahnPinLastActive=Date.now()},{passive:true,capture:true});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)zahnPinIdleCheck()});
+window.addEventListener('pageshow',()=>{if(document.documentElement.classList.contains('zahn-pin-locked'))zahnPinSetLocked(true);else zahnPinIdleCheck()});
+window.addEventListener('storage',e=>{if(e.key===zahnPinKey){try{zahnPinRefresh();if(zahnPinRead())zahnPinSetLocked(true);else zahnPinSetLocked(false)}catch(error){zahnPinSetLocked(true)}}});
+setInterval(zahnPinIdleCheck,10000);
+try{zahnPinRefresh();if(zahnPinRead())zahnPinSetLocked(true)}catch(e){zahnPinSetLocked(true);$('zahnPinGateStatus').textContent=e.message}
 </script></body></html>
