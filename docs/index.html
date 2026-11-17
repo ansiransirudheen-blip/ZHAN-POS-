@@ -459,17 +459,17 @@ zahnPendingNotice();
 </script>
 <div id="zahnPinGate" hidden role="dialog" aria-modal="true" aria-labelledby="zahnPinGateTitle"><div class="panel zahn-pin-card">
 <img src="zahn-logo.webp" alt="ZAHN" width="80" height="80"><h2 id="zahnPinGateTitle">Unlock ZAHN POS</h2>
-<form onsubmit="zahnPinUnlock(event)"><label id="zahnPinEntryLabel" for="zahnPinEntry">Your PIN</label><input id="zahnPinEntry" type="password" inputmode="numeric" maxlength="6" autocomplete="off" required><p><button id="zahnPinUnlock" class="primary" type="submit">Unlock</button></p></form>
+<form onsubmit="event.preventDefault(); window.zahnPinUnlock(event)"><label id="zahnPinEntryLabel" for="zahnPinEntry">Your PIN</label><input id="zahnPinEntry" type="password" inputmode="numeric" maxlength="6" autocomplete="off" required><p><button id="zahnPinUnlockButton" class="primary" type="submit">Unlock</button></p></form>
 <p id="zahnPinGateStatus" role="status"></p><button id="zahnPinRecoveryToggle" type="button" onclick="zahnPinToggleRecovery()">Forgot PIN? Use recovery code</button></div></div>
 <dialog id="zahnPinSettings" aria-labelledby="zahnPinSettingsTitle"><h2 id="zahnPinSettingsTitle">Device PIN</h2>
 <p>Use 4 or 6 digits. Six digits is recommended. This lock applies to this browser only.</p>
-<form id="zahnPinSetupForm" onsubmit="zahnPinSave(event)">
+<form id="zahnPinSetupForm" onsubmit="event.preventDefault(); window.zahnPinSave(event)">
 <div id="zahnPinCurrentWrap"><label for="zahnPinCurrent">Current PIN</label><input id="zahnPinCurrent" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></div>
 <label for="zahnPinNew">New PIN</label><input id="zahnPinNew" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
 <label for="zahnPinConfirm">Confirm new PIN</label><input id="zahnPinConfirm" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
 <p><strong>Save this recovery code privately.</strong> It restores access if you forget this PIN. A new PIN replaces the previous recovery code.</p><code id="zahnPinRecoveryCode"></code>
 <label><input id="zahnPinRecoverySaved" type="checkbox" style="width:auto"> I saved the recovery code somewhere safe.</label>
-<p id="zahnPinSetupStatus" role="status"></p><p><button id="zahnPinSave" class="primary" type="submit">Save and Lock</button> <button id="zahnPinRemove" type="button" onclick="zahnPinSave(event,true)">Remove PIN</button> <button type="button" onclick="if(!zahnPinBusy){document.getElementById('zahnPinSetupForm').reset();zahnPinSetupRecovery='';document.getElementById('zahnPinRecoveryCode').textContent='';document.getElementById('zahnPinSettings').close()}">Cancel</button></p></form>
+<p id="zahnPinSetupStatus" role="status"></p><p><button id="zahnPinSaveButton" class="primary" type="submit">Save and Lock</button> <button id="zahnPinRemove" type="button" onclick="window.zahnPinSave(event,true)">Remove PIN</button> <button type="button" onclick="if(!zahnPinBusy){document.getElementById('zahnPinSetupForm').reset();zahnPinSetupRecovery='';document.getElementById('zahnPinRecoveryCode').textContent='';document.getElementById('zahnPinSettings').close()}">Cancel</button></p></form>
 <p class="muted">This is a local screen lock, not encryption of stored invoices. Keep the tablet screen lock enabled. Cloud access still uses your email login.</p></dialog>
 <script>
 const zahnPinKey='zahn_device_pin_v1';
@@ -484,7 +484,7 @@ function zahnPinSetLocked(locked){
  if(locked){if($('zahnPinSettings').open)$('zahnPinSettings').close();$('zahnPinSetupForm').reset();zahnPinSetupRecovery='';$('zahnPinRecoveryCode').textContent='';$('zahnPinEntry').value='';zahnPinRecovery=false;zahnPinGateLabels();setTimeout(()=>$('zahnPinEntry').focus(),0)}
  else zahnPinLastActive=Date.now();
 }
-function zahnPinGateLabels(){$('zahnPinEntry').type=zahnPinRecovery?'text':'password';$('zahnPinEntry').inputMode=zahnPinRecovery?'text':'numeric';$('zahnPinEntry').maxLength=zahnPinRecovery?32:6;$('zahnPinEntryLabel').textContent=zahnPinRecovery?'Recovery code':'Your PIN';$('zahnPinRecoveryToggle').textContent=zahnPinRecovery?'Use PIN':'Forgot PIN? Use recovery code';$('zahnPinUnlock').textContent=zahnPinRecovery?'Recover access':'Unlock';$('zahnPinEntry').value=''}
+function zahnPinGateLabels(){$('zahnPinEntry').type=zahnPinRecovery?'text':'password';$('zahnPinEntry').inputMode=zahnPinRecovery?'text':'numeric';$('zahnPinEntry').maxLength=zahnPinRecovery?64:6;$('zahnPinEntryLabel').textContent=zahnPinRecovery?'Recovery code':'Your PIN';$('zahnPinRecoveryToggle').textContent=zahnPinRecovery?'Use PIN':'Forgot PIN? Use recovery code';$('zahnPinUnlockButton').textContent=zahnPinRecovery?'Recover access':'Unlock';$('zahnPinEntry').value=''}
 function zahnPinToggleRecovery(){if(zahnPinBusy)return;zahnPinRecovery=!zahnPinRecovery;zahnPinGateLabels();$('zahnPinGateStatus').textContent=zahnPinRecovery?'Enter the recovery code saved when you set this PIN. Recovery removes this device PIN.':' ';$('zahnPinEntry').focus()}
 function zahnPinLock(){try{if(zahnPinRead())zahnPinSetLocked(true);else zahnPinOpenSetup()}catch(e){$('zahnPinGateStatus').textContent=e.message;zahnPinSetLocked(true)}}
 async function zahnPinVerify(value,recovery=false){
@@ -498,7 +498,7 @@ async function zahnPinVerify(value,recovery=false){
  r.failures=0;r.until=0;localStorage.setItem(zahnPinKey,JSON.stringify(r));return r;
 }
 async function zahnPinUnlock(event){
- event.preventDefault();if(zahnPinBusy)return;zahnPinBusy=true;$('zahnPinUnlock').disabled=true;
+ event.preventDefault();if(zahnPinBusy)return;zahnPinBusy=true;$('zahnPinUnlockButton').disabled=true;
  const recovery=zahnPinRecovery;
  try{
   await zahnPinVerify($('zahnPinEntry').value,recovery);
@@ -506,7 +506,7 @@ async function zahnPinUnlock(event){
   $('zahnPinEntry').value='';zahnPinSetLocked(false);zahnPinRefresh();
   if(recovery){zahnPinOpenSetup();$('zahnPinSetupStatus').textContent='Access recovered. Set a new PIN for this device.'}
  }catch(e){$('zahnPinGateStatus').textContent=e.message;$('zahnPinEntry').value=''}
- finally{zahnPinBusy=false;$('zahnPinUnlock').disabled=false}
+ finally{zahnPinBusy=false;$('zahnPinUnlockButton').disabled=false}
 }
 function zahnPinRefresh(){const r=zahnPinRead();$('zahnPinState').textContent=r?'PIN enabled on this browser. Locks on opening and after 5 minutes without activity.':'No device PIN set.';$('zahnPinSettingsButton').textContent=r?'Change / Remove PIN':'Set Device PIN';$('zahnPinLockNow').hidden=!r}
 function zahnPinOpenSetup(){
@@ -517,7 +517,7 @@ function zahnPinOpenSetup(){
  $('zahnPinSetupStatus').textContent='';$('zahnPinSettings').showModal();
 }
 async function zahnPinSave(event,remove=false){
- event.preventDefault();if(zahnPinBusy)return;zahnPinBusy=true;$('zahnPinSave').disabled=true;$('zahnPinRemove').disabled=true;
+ event.preventDefault();if(zahnPinBusy)return;zahnPinBusy=true;$('zahnPinSaveButton').disabled=true;$('zahnPinRemove').disabled=true;
  try{
   const current=zahnPinRead(),pin=$('zahnPinNew').value;
   if(!remove){
@@ -537,7 +537,7 @@ async function zahnPinSave(event,remove=false){
   $('zahnPinSetupForm').reset();zahnPinSetupRecovery='';$('zahnPinRecoveryCode').textContent='';$('zahnPinSettings').close();zahnPinRefresh();
   if(!remove)zahnPinLock();
  }catch(e){$('zahnPinSetupStatus').textContent=e.message}
- finally{zahnPinBusy=false;$('zahnPinSave').disabled=false;$('zahnPinRemove').disabled=false}
+ finally{zahnPinBusy=false;$('zahnPinSaveButton').disabled=false;$('zahnPinRemove').disabled=false}
 }
 function zahnPinIdleCheck(){if(document.documentElement.classList.contains('zahn-pin-locked'))return;try{if(zahnPinRead()&&Date.now()-zahnPinLastActive>=300000)zahnPinLock()}catch(e){zahnPinSetLocked(true);$('zahnPinGateStatus').textContent=e.message}}
 for(const event of ['pointerdown','keydown','touchstart'])document.addEventListener(event,()=>{zahnPinIdleCheck();if(!document.documentElement.classList.contains('zahn-pin-locked'))zahnPinLastActive=Date.now()},{passive:true,capture:true});
