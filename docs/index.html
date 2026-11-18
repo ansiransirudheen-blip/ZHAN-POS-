@@ -16,7 +16,7 @@
 </style><script>try{if(localStorage.getItem('zahn_device_pin_v1'))document.documentElement.classList.add('zahn-pin-locked')}catch(e){document.documentElement.classList.add('zahn-pin-locked')}</script></head><body><header><div class="brand-header"><img src="zahn-logo.webp" alt="Original ZAHN logo" class="brand-logo"><div><h1>ZAHN</h1><small>LUXURY PERFUMES · ESSENCE OF YOU</small></div></div><span class="pill">INVOICE</span></header><main><nav><button class="active" onclick="show('new',this)">New Invoice</button><button onclick="show('saved',this)">Saved Invoices</button><button onclick="show('reports',this)">Sales Reports</button><button onclick="show('close',this)">Day Close</button><button onclick="show('cloud',this)">Cloud Backup</button><button id="zahnPinLockNow" hidden onclick="zahnPinLock()">Lock Now</button></nav>
 <section id="new"><div class="panel"><h2>New Invoice</h2><div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>Customer Name</label><input id="customer" placeholder="Optional"></div><div><label>Mobile Number</label><input id="phone" type="tel" placeholder="9665XXXXXXXX"></div><div><label>Payment</label><select id="payment"><option>Cash</option><option>Mada</option><option>Bank Transfer</option></select></div></div><h3>Perfumes</h3><datalist id="names"></datalist><div id="items"></div><button onclick="addItem()">+ Add Perfume</button><div class="grid"><div><label for="discount">Discount (SAR)</label><input id="discount" type="number" min="0" step="0.01" value="" oninput="total()"></div><div class="right"><label>Perfume Subtotal</label><strong id="subtotal">SAR 0.00</strong></div></div><p class="right muted">Discount: <span id="discountShown">SAR 0.00</span></p><p class="right tot" id="total">SAR 0.00</p><button class="primary" onclick="save()">Save Invoice</button><p id="msg" role="status"></p></div></section>
 <section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div><details ontoggle="if(this.open)zahnShowTestArchive()"><summary>Test Bills Archive — excluded from sales</summary><div id="zahnTestArchive"></div></details></div></section>
-<section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div></div></section>
+<section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div><div class="panel"><h3>ML Sales Report</h3><p class="muted">Uses the From / To dates above. Choose Today, This Month or any date range. Test bills are excluded.</p><div class="grid"><div><label for="mlReportSize">ML size</label><select id="mlReportSize" onchange="zahnMlReport()"><option value="">All ML sizes</option></select></div><div><label for="mlReportPeriod">Group report by</label><select id="mlReportPeriod" onchange="zahnMlReport()"><option value="size">ML size total</option><option value="day">Daily</option><option value="month">Monthly</option></select></div></div><div class="action-row"><button class="primary" onclick="zahnMlReport()">View ML Report</button><button onclick="zahnExportMlCsv()">Export ML CSV</button></div><p class="muted">Bottles = quantity sold. Total ML = size × quantity. Invoice discounts are shared between items in proportion to their price, rounded to SAR 0.01. The invoice report above always shows all sizes.</p><div id="mlReportOutput" aria-live="polite"></div></div></div></section>
 <section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><div class="action-row"><button onclick="dayClose()">View Day Summary</button><button class="primary" onclick="confirmDayClose()">Confirm Day Close</button><button onclick="reopenDay()">Reopen Day</button><button onclick="exportDayCloseCsv()">Export Day Close CSV</button></div><div id="closeOutput"></div></div></section>
 <section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><div class="panel"><h3>Device PIN</h3><p id="zahnPinState"></p><button id="zahnPinSettingsButton" onclick="zahnPinOpenSetup()">Set Device PIN</button></div><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button id="cloudChangeEmailButton" onclick="cloudChangeEmail()">Change Login Email</button></p><p id="cloudEmailChangeStatus" role="status" class="muted">Change the email of your existing account while keeping its invoices.</p><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p><label for="zahnJsonRestoreFile">Restore JSON Backup (adds missing records only)</label><input id="zahnJsonRestoreFile" type="file" accept=".json,application/json" onchange="zahnPreviewJsonRestore(this)"></p><p id="zahnJsonRestoreStatus" role="status" class="muted">Choose a ZAHN JSON backup file to preview it. No changes until you confirm.</p><button id="zahnJsonRestoreConfirm" onclick="zahnConfirmJsonRestore()" disabled>Confirm Restore Missing Records</button><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer>Invoices save in this browser and sync while signed in and online. Keep a separate JSON backup. Offline invoices use provisional unique numbers. Anyone with a PDF link can view that invoice while the service and file remain available. New invoices do not charge VAT. Shop address and contact details have not been configured.</footer></main>
 <script>
@@ -197,10 +197,76 @@ function filteredSales(){
  return zahnSalesInvoices().filter(x=>x.date>=from&&x.date<=to).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));
 }
 function report(){
+ zahnMlReport();
  const a=filteredSales();if(!a){$('reportOutput').textContent='From Date must be before or equal to To Date.';return}
  const summary=salesSummary(a),closes=loadDayCloses();
  $('reportOutput').innerHTML=tiles(summary)+'<h3>Invoice Details</h3><div class="report-table"><table><thead><tr><th>Date</th><th>Invoice</th><th>Payment</th><th>Status</th><th>Total</th></tr></thead><tbody>'+a.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.id)+'</td><td>'+esc(paymentName(x.payment))+'</td><td>'+ (closes[x.date]?'Closed':'Open') +'</td><td>'+fmt(x.total)+'</td></tr>').join('')+'</tbody></table></div>'+(a.length?'':'<p>No invoices in selected dates.</p>');
 }
+
+function zahnMlAllocate(amount,weights){
+ const sum=weights.reduce((a,b)=>a+b,0);
+ if(!sum)return weights.map(()=>0);
+ const raw=weights.map(w=>amount*w/sum),out=raw.map(Math.floor);
+ let remainder=amount-out.reduce((a,b)=>a+b,0);
+ const order=raw.map((v,i)=>({i,f:v-out[i]})).sort((a,b)=>b.f-a.f||a.i-b.i);
+ for(let n=0;n<remainder;n++)out[order[n%order.length].i]++;
+ return out;
+}
+function zahnMlRows(invoices){
+ const result=[];let skipped=0;
+ for(const inv of invoices){
+  const items=Array.isArray(inv.items)?inv.items:[];
+  if(!items.length||items.some(x=>!Number.isFinite(Number(x.ml))||Number(x.ml)<=0||!Number.isInteger(Number(x.qty))||Number(x.qty)<=0||!Number.isFinite(Number(x.price))||Number(x.price)<0)){skipped++;continue}
+  const weights=items.map(x=>Number(x.qty)*Number(x.price));
+  const gross=Math.round(weights.reduce((a,b)=>a+b,0)*100);
+  const net=Math.round(Number(inv.total)*100);
+  if(!Number.isFinite(net)||net<0||net>gross){skipped++;continue}
+  const grossParts=zahnMlAllocate(gross,weights),discountParts=zahnMlAllocate(gross-net,grossParts);
+  items.forEach((x,i)=>result.push({date:inv.date,id:inv.id,name:x.name||'',ml:Number(x.ml),qty:Number(x.qty),volume:Number(x.ml)*Number(x.qty),gross:grossParts[i],discount:discountParts[i],net:grossParts[i]-discountParts[i]}));
+ }
+ return {rows:result,skipped};
+}
+function zahnMlGroup(rows,period){
+ const groups=new Map();
+ for(const r of rows){
+  const date=period==='month'?r.date.slice(0,7):period==='day'?r.date:'Selected dates';
+  const key=date+'|'+r.ml;
+  if(!groups.has(key))groups.set(key,{period:date,ml:r.ml,qty:0,volume:0,gross:0,discount:0,net:0,invoices:new Set()});
+  const g=groups.get(key);for(const k of ['qty','volume','gross','discount','net'])g[k]+=r[k];g.invoices.add(r.id);
+ }
+ return [...groups.values()].sort((a,b)=>a.period.localeCompare(b.period)||a.ml-b.ml);
+}
+function zahnMlSelection(){
+ const invoices=filteredSales();if(!invoices)return null;
+ const result=zahnMlRows(invoices),size=$('mlReportSize').value;
+ return {...result,rows:result.rows.filter(r=>!size||r.ml===Number(size))};
+}
+function zahnMlReport(){
+ const selected=$('mlReportSize').value;
+ const sizes=new Set([10,30,50,80,100]);
+ for(const inv of zahnSalesInvoices())for(const item of (Array.isArray(inv.items)?inv.items:[])){const ml=Number(item.ml);if(Number.isFinite(ml)&&ml>0)sizes.add(ml)}
+ $('mlReportSize').innerHTML='<option value="">All ML sizes</option>'+[...sizes].sort((a,b)=>a-b).map(ml=>'<option value="'+ml+'">'+ml+' ml</option>').join('');
+ $('mlReportSize').value=sizes.has(Number(selected))?selected:'';
+ const result=zahnMlSelection();
+ if(!result){$('mlReportOutput').textContent='From Date must be before or equal to To Date.';return}
+ const rows=result.rows,groups=zahnMlGroup(rows,$('mlReportPeriod').value);
+ const qty=rows.reduce((s,r)=>s+r.qty,0),volume=rows.reduce((s,r)=>s+r.volume,0),net=rows.reduce((s,r)=>s+r.net,0),count=new Set(rows.map(r=>r.id)).size;
+ $('mlReportOutput').innerHTML='<p class="status-note">'+esc($('from').value||'Beginning')+' to '+esc($('to').value||'Latest')+' · '+esc($('mlReportSize').value?$('mlReportSize').value+' ml':'All ML sizes')+'</p><div class="summary-grid"><div class="summary-tile">Matching invoices<strong>'+count+'</strong></div><div class="summary-tile">Bottles sold<strong>'+qty+'</strong></div><div class="summary-tile">Total volume<strong>'+volume+' ml</strong></div><div class="summary-tile">Net sales<strong>'+fmt(net/100)+'</strong></div></div>'+
+ (groups.length?'<div class="report-table"><table><thead><tr><th>Period</th><th>Size</th><th>Bottles</th><th>Total ML</th><th>Before discount</th><th>Discount</th><th>Net sales</th></tr></thead><tbody>'+groups.map(g=>'<tr><td>'+esc(g.period)+'</td><td>'+g.ml+' ml</td><td>'+g.qty+'</td><td>'+g.volume+'</td><td>'+fmt(g.gross/100)+'</td><td>'+fmt(g.discount/100)+'</td><td>'+fmt(g.net/100)+'</td></tr>').join('')+'</tbody></table></div>':'<p>No sales for this ML size in the selected dates.</p>')+
+ (result.skipped?'<p role="status">'+result.skipped+' invoice(s) could not be included because item sizes, quantities or amounts are missing or inconsistent. Their original invoices are unchanged.</p>':'');
+}
+function zahnExportMlCsv(){
+ const result=zahnMlSelection();if(!result)return alert('Invalid date range');
+ const groups=zahnMlGroup(result.rows,$('mlReportPeriod').value);
+ downloadCsv('ZAHN-ML-sales-'+($('mlReportSize').value||'all')+'ml-'+($('from').value||'start')+'-'+($('to').value||'latest')+'.csv',[
+ ['From Date','To Date','ML Filter','Grouping','Excluded Invoices'],
+ [$('from').value||'Beginning',$('to').value||'Latest',$('mlReportSize').value||'All',$('mlReportPeriod').value,result.skipped],
+ [],
+ ['Period','Size ML','Bottles Sold','Total ML','Before Discount SAR','Discount SAR','Net Sales SAR','Matching Invoices'],
+ ...groups.map(g=>[g.period,g.ml,g.qty,g.volume,(g.gross/100).toFixed(2),(g.discount/100).toFixed(2),(g.net/100).toFixed(2),g.invoices.size])
+ ]);
+}
+
 function csvEscape(v){const t=String(v??'');return /[",\r\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t}
 function downloadCsv(name,records){const content='\uFEFF'+records.map(row=>row.map(csvEscape).join(',')).join('\r\n');const blob=new Blob([content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
 function exportSalesCsv(){const a=filteredSales();if(!a){alert('Invalid date range');return}downloadCsv('ZAHN-sales-'+($('from').value||'all')+'-'+($('to').value||'all')+'.csv',[['Date','Invoice','Customer','Payment','Total SAR','Day Status'],...a.map(x=>[x.date,x.id,x.customer||'',paymentName(x.payment),Number(x.total||0).toFixed(2),loadDayCloses()[x.date]?'Closed':'Open'])])}
