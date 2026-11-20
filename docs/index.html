@@ -15,8 +15,8 @@
 @media print{.zahn-pin-locked body>*{display:none!important}#zahnPinSettings,#zahnPinGate{display:none!important}}
 </style><script>try{if(localStorage.getItem('zahn_device_pin_v1'))document.documentElement.classList.add('zahn-pin-locked')}catch(e){document.documentElement.classList.add('zahn-pin-locked')}</script></head><body><header><div class="brand-header"><img src="zahn-logo.webp" alt="Original ZAHN logo" class="brand-logo"><div><h1>ZAHN</h1><small>LUXURY PERFUMES · ESSENCE OF YOU</small></div></div><span class="pill">INVOICE</span></header><main><nav><button class="active" onclick="show('new',this)">New Invoice</button><button onclick="show('saved',this)">Saved Invoices</button><button onclick="show('reports',this)">Sales Reports</button><button onclick="show('close',this)">Day Close</button><button onclick="show('cloud',this)">Cloud Backup</button><button id="zahnPinLockNow" hidden onclick="zahnPinLock()">Lock Now</button></nav>
 <section id="new"><div class="panel"><h2>New Invoice</h2><div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>Customer Name</label><input id="customer" placeholder="Optional"></div><div><label>Mobile Number</label><input id="phone" type="tel" placeholder="9665XXXXXXXX"></div><div><label>Payment</label><select id="payment"><option>Cash</option><option>Mada</option><option>Bank Transfer</option></select></div></div><h3>Perfumes</h3><datalist id="names"></datalist><div id="items"></div><button onclick="addItem()">+ Add Perfume</button><div class="grid"><div><label for="discount">Discount (SAR)</label><input id="discount" type="number" min="0" step="0.01" value="" oninput="total()"></div><div class="right"><label>Perfume Subtotal</label><strong id="subtotal">SAR 0.00</strong></div></div><p class="right muted">Discount: <span id="discountShown">SAR 0.00</span></p><p class="right tot" id="total">SAR 0.00</p><button class="primary" onclick="save()">Save Invoice</button><p id="msg" role="status"></p></div></section>
-<section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><div id="savedList"></div><details ontoggle="if(this.open)zahnShowTestArchive()"><summary>Test Bills Archive — excluded from sales</summary><div id="zahnTestArchive"></div></details></div></section>
-<section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div><div class="panel"><h3>ML Sales Report</h3><p class="muted">Uses the From / To dates above. Choose Today, This Month or any date range. Test bills are excluded.</p><div class="grid"><div><label for="mlReportSize">ML size</label><select id="mlReportSize" onchange="zahnMlReport()"><option value="">All ML sizes</option></select></div><div><label for="mlReportPeriod">Group report by</label><select id="mlReportPeriod" onchange="zahnMlReport()"><option value="size">ML size total</option><option value="day">Daily</option><option value="month">Monthly</option></select></div></div><div class="action-row"><button class="primary" onclick="zahnMlReport()">View ML Report</button><button onclick="zahnExportMlCsv()">Export ML CSV</button></div><p class="muted">Bottles = quantity sold. Total ML = size × quantity. Invoice discounts are shared between items in proportion to their price, rounded to SAR 0.01. The invoice report above always shows all sizes.</p><div id="mlReportOutput" aria-live="polite"></div></div></div></section>
+<section id="saved" class="hidden"><div class="panel"><h2>Saved Invoices</h2><p id="zahnAdjustmentNotice" role="status" hidden></p><button id="zahnAdjustmentRetry" hidden onclick="zahnRetryAdjustment()">Retry Pending Change</button><div id="savedList"></div><details ontoggle="if(this.open)zahnShowTestArchive()"><summary>Test Bills Archive — excluded from sales</summary><div id="zahnTestArchive"></div></details></div></section>
+<section id="reports" class="hidden"><div class="panel"><h2>Sales Reports</h2><div class="action-row"><button onclick="reportPreset('today')">Today</button><button onclick="reportPreset('month')">This Month</button><button onclick="reportPreset('all')">All Time</button></div><div class="grid"><div><label>From Date</label><input id="from" type="date"></div><div><label>To Date</label><input id="to" type="date"></div></div><div class="action-row"><button class="primary" onclick="report()">View Sales</button><button onclick="exportSalesCsv()">Export Sales CSV</button></div><div id="reportOutput"></div><div class="panel"><h3>Perfume &amp; ML Sales Report</h3><label for="mlReportName">Perfume name</label><input id="mlReportName" list="mlReportNames" placeholder="All perfumes, or type Secret 01" oninput="zahnMlReport()"><datalist id="mlReportNames"></datalist><p class="muted">Uses the From / To dates above. Choose Today, This Month or any date range. Test bills are excluded.</p><div class="grid"><div><label for="mlReportSize">ML size</label><select id="mlReportSize" onchange="zahnMlReport()"><option value="">All ML sizes</option></select></div><div><label for="mlReportPeriod">Group report by</label><select id="mlReportPeriod" onchange="zahnMlReport()"><option value="size">Perfume + ML totals</option><option value="day">Daily</option><option value="month">Monthly</option></select></div></div><div class="action-row"><button class="primary" onclick="zahnMlReport()">View ML Report</button><button onclick="zahnExportMlCsv()">Export ML CSV</button></div><p class="muted">Net bottles = sold minus returns/reversals. Net ML = size × net bottles. Returns use their recorded date; corrections reverse the original date. Invoice discounts are shared between items in proportion to their price, rounded to SAR 0.01. The invoice report above always shows all sizes.</p><div id="mlReportOutput" aria-live="polite"></div></div></div></section>
 <section id="close" class="hidden"><div class="panel"><h2>Day Close</h2><label>Close Date</label><input type="date" id="closeDate"><div class="action-row"><button onclick="dayClose()">View Day Summary</button><button class="primary" onclick="confirmDayClose()">Confirm Day Close</button><button onclick="reopenDay()">Reopen Day</button><button onclick="exportDayCloseCsv()">Export Day Close CSV</button></div><div id="closeOutput"></div></div></section>
 <section id="cloud" class="hidden"><div class="panel"><h2>Cloud Backup</h2><p class="muted">Sign in to back up invoices securely. Your current browser data remains unchanged.</p><div class="panel"><h3>Device PIN</h3><p id="zahnPinState"></p><button id="zahnPinSettingsButton" onclick="zahnPinOpenSetup()">Set Device PIN</button></div><p id="cloudStatus" role="status">Login not checked</p><div><button onclick="cloudCheck()">Check Login</button> <button onclick="cloudLogin()">Email Login</button> <button onclick="cloudSignOut()">Sign Out</button></div><p><button id="cloudChangeEmailButton" onclick="cloudChangeEmail()">Change Login Email</button></p><p id="cloudEmailChangeStatus" role="status" class="muted">Change the email of your existing account while keeping its invoices.</p><p><button class="primary" onclick="cloudBackup()">Back Up This Device</button> <button onclick="cloudRestore()">Restore Missing Records</button> <button onclick="zahnDownloadJsonBackup()">Download JSON Backup</button></p><p id="jsonBackupStatus" role="status" class="muted"></p><p><label for="zahnJsonRestoreFile">Restore JSON Backup (adds missing records only)</label><input id="zahnJsonRestoreFile" type="file" accept=".json,application/json" onchange="zahnPreviewJsonRestore(this)"></p><p id="zahnJsonRestoreStatus" role="status" class="muted">Choose a ZAHN JSON backup file to preview it. No changes until you confirm.</p><button id="zahnJsonRestoreConfirm" onclick="zahnConfirmJsonRestore()" disabled>Confirm Restore Missing Records</button><p class="muted">Auto Sync runs while signed in and online, and retries after reconnection. Manual Backup and Restore remain available. Do not clear browser storage.</p></div></section><section id="invoicePrint" class="panel hidden"></section><footer>Invoices save in this browser and sync while signed in and online. Keep a separate JSON backup. Offline invoices use provisional unique numbers. Anyone with a PDF link can view that invoice while the service and file remain available. New invoices do not charge VAT. Shop address and contact details have not been configured.</footer></main>
 <script>
@@ -26,7 +26,7 @@ function show(id,btn){['new','saved','reports','close','cloud'].forEach(x=>$(x).
 function addItem(){rows.push({name:'',ml:'50',qty:1,price:''});draw()}
 const zahnTestInvoiceIds=new Set(['ZHN-1794730221579','ZHN-1794739836470','ZHN-0000001','ZHN-1794740122760','ZHN-1794741660021','ZHN-1794743804134','ZHN-1794744989271']);
 function zahnIsTestInvoice(x){return zahnTestInvoiceIds.has(x.id)||x.invoicePurpose==='test'}
-function zahnSalesInvoices(){return load().filter(x=>!zahnIsTestInvoice(x))}
+function zahnSalesInvoices(){return load().filter(x=>!zahnIsTestInvoice(x)).map(x=>zahnReturnRecord(x)?{...x,total:-Math.abs(Number(x.total)),reportSign:-1}:x)}
 function perfumeNames(){const names=new Map(Array.from({length:70},(_,i)=>{const name='Secret '+String(i+1).padStart(2,'0');return [name.toLocaleLowerCase(),name]}));load().forEach(inv=>(inv.items||[]).forEach(item=>{const name=String(item.name||'').trim();if(name&&!names.has(name.toLocaleLowerCase()))names.set(name.toLocaleLowerCase(),name)}));return [...names.values()].sort((a,b)=>a.localeCompare(b))}
 function suggestPerfumes(input,index){const host=input.closest('.perfume-field'),list=host?.querySelector('.perfume-suggestions');if(!list)return;const query=input.value.trim().toLocaleLowerCase();const matches=perfumeNames().filter(name=>name.toLocaleLowerCase().includes(query));list.replaceChildren();matches.forEach(name=>{const btn=document.createElement('button');btn.type='button';btn.className='perfume-suggestion';btn.textContent=name;btn.addEventListener('pointerdown',e=>e.preventDefault());btn.addEventListener('click',()=>{rows[index].name=name;input.value=name;list.hidden=true;list.replaceChildren();input.focus()});list.appendChild(btn)});list.hidden=!matches.length}
 function hidePerfumeSuggestions(input){setTimeout(()=>{const list=input.closest('.perfume-field')?.querySelector('.perfume-suggestions');if(list)list.hidden=true},180)}
@@ -39,6 +39,7 @@ function zahnPendingNotice(){
 }
 async function save(){
  if(zahnSaving)return;
+ if(zahnAdjustmentPending())return alert('Retry the pending invoice change in Saved Invoices first.');
  let pending;
  try{pending=JSON.parse(localStorage.getItem(zahnPendingInvoiceKey)||'null')}catch(e){$('msg').textContent='Pending invoice could not be read. Do not clear browser storage.';return}
  let inv;
@@ -79,17 +80,116 @@ async function save(){
  }catch(e){$('msg').textContent='Invoice not confirmed: '+(e.message||e)+'. Retry Save to recover the same invoice before creating a new bill. Do not clear browser storage.'}
  finally{zahnSaving=false}
 }
-function saved(){let a=zahnSalesInvoices().slice().reverse();$('savedList').innerHTML=a.length?a.map(x=>'<div class="panel"><b>'+esc(x.id)+'</b> · '+esc(x.date)+' · '+fmt(x.total)+' · '+esc(x.customer)+' <button onclick="printById(\''+esc(x.id)+'\')">Print / PDF</button> <button onclick="sendById(\''+esc(x.id)+'\')">WhatsApp Text</button> <button onclick="pdfById(\''+esc(x.id)+'\')">Share PDF</button></div>').join(''):'No invoices saved'}
+function saved(){zahnRenderSaved()}
+
+const zahnAdjustmentKey='zahn_pending_adjustment_v1';
+let zahnAdjustmentTarget=null,zahnAdjustmentKind=null,zahnAdjustmentBusy=false;
+function zahnReturnRecord(x){return x.invoicePurpose==='return'}
+function zahnInvoiceLabel(x){return zahnIsTestInvoice(x)?'TEST INVOICE':zahnReturnRecord(x)?(x.adjustmentKind==='edit'?'CORRECTION REVERSAL':'RETURN RECEIPT'):'INVOICE'}
+function zahnInvoiceNote(x){const reversal=!zahnReturnRecord(x)&&load().find(r=>zahnReturnRecord(r)&&r.originalInvoiceId===x.id);if(reversal)return (reversal.adjustmentKind==='edit'?'REPLACED BY '+reversal.replacementInvoiceId:'RETURNED on '+reversal.date)+' | Original retained for history.';return zahnReturnRecord(x)?'Original invoice: '+x.originalInvoiceId+(x.replacementInvoiceId?' | Replaced by: '+x.replacementInvoiceId:'')+' | Reason: '+(x.reason||''):x.replacesInvoiceId?'Corrected invoice replacing '+x.replacesInvoiceId:zahnIsTestInvoice(x)?'TEST BILL - NOT A SALE':'Thank you for your purchase.'}
+function zahnAdjustmentPending(){return JSON.parse(localStorage.getItem(zahnAdjustmentKey)||'null')}
+function zahnAdjustmentNotice(){
+ const pending=zahnAdjustmentPending();
+ $('zahnAdjustmentNotice').hidden=!pending;
+ $('zahnAdjustmentNotice').textContent=pending?'An invoice change is awaiting confirmation. Click Retry Pending Change before editing or returning another bill.':'';
+ $('zahnAdjustmentRetry').hidden=!pending;
+}
+function zahnAddAdjustmentItem(item={name:'',ml:50,qty:1,price:''}){
+ const row=document.createElement('div');row.className='item zahn-adjust-row';
+ row.innerHTML='<label>Perfume<input data-field="name" list="names" value="'+esc(item.name)+'"></label><label>ML<input data-field="ml" type="number" min="1" step="any" value="'+esc(item.ml)+'"></label><label>Qty<input data-field="qty" type="number" min="1" step="1" value="'+esc(item.qty)+'"></label><label>Unit price<input data-field="price" type="number" min="0" step="0.01" value="'+esc(item.price)+'"></label><button type="button" onclick="this.parentElement.remove();zahnAdjustmentTotals()">Remove</button>';
+ $('zahnAdjustmentItems').appendChild(row);
+}
+function zahnAdjustmentItems(){return [...$('zahnAdjustmentItems').querySelectorAll('.zahn-adjust-row')].map(row=>{const get=k=>row.querySelector('[data-field="'+k+'"]').value;return {name:get('name').trim(),ml:Number(get('ml')),qty:Number(get('qty')),price:get('price').trim()===''?NaN:Number(get('price'))}})}
+function zahnAdjustmentTotals(){const subtotal=money(zahnAdjustmentItems().reduce((s,x)=>s+x.qty*x.price,0)),discount=Number($('zahnAdjustmentDiscount').value||0);$('zahnAdjustmentTotal').textContent='Corrected total: '+fmt(subtotal-discount)}
+function zahnCloseAdjustment(){if(zahnAdjustmentBusy)return;$('zahnAdjustmentDialog').close()}
+function zahnOpenAdjustment(id,kind){
+ try{
+  if(zahnAdjustmentPending())return alert('Retry the pending invoice change first.');
+  if(localStorage.getItem(zahnPendingInvoiceKey))return alert('Finish the pending new invoice first.');
+  const original=load().find(x=>x.id===id);
+  if(!original||zahnIsTestInvoice(original)||zahnReturnRecord(original))return;
+  if(load().some(x=>zahnReturnRecord(x)&&x.originalInvoiceId===id))return alert('This invoice was already returned or replaced.');
+  zahnAdjustmentTarget=original;zahnAdjustmentKind=kind;
+  $('zahnAdjustmentTitle').textContent=kind==='edit'?'Edit saved invoice':'Return full invoice';
+  $('zahnAdjustmentOriginal').textContent=id+' · '+original.date+' · '+fmt(original.total);
+  $('zahnAdjustmentReason').value='';$('zahnAdjustmentStatus').textContent='';
+  $('zahnAdjustmentEditFields').hidden=kind!=='edit';
+  $('zahnAdjustmentCustomer').value=original.customer||'';$('zahnAdjustmentPhone').value=original.phone||'';
+  $('zahnAdjustmentPayment').value=['Cash','Mada','Bank Transfer'].includes(original.payment)?original.payment:'Cash';
+  $('zahnAdjustmentPaymentLabel').textContent=kind==='edit'?'Corrected payment method':'Refund payment method';
+  $('zahnAdjustmentDiscount').value=original.discount||'';
+  $('zahnAdjustmentItems').innerHTML='';for(const item of original.items||[])zahnAddAdjustmentItem(item);
+  zahnAdjustmentTotals();
+  $('zahnAdjustmentHelp').textContent=kind==='edit'?'Creates a corrected invoice with a new number and reverses the old bill on its original date. The original stays in history. Reopen that date first if closed.':'Returns every item on this bill. The refund is deducted on today’s Riyadh date. This records a return; it does not transfer money.';
+  $('zahnAdjustmentSubmit').textContent=kind==='edit'?'Save corrected invoice':'Confirm full return';
+  $('zahnAdjustmentDialog').showModal();
+ }catch(e){alert(e.message)}
+}
+async function zahnSubmitAdjustment(event){
+ event?.preventDefault();if(zahnAdjustmentBusy)return;zahnAdjustmentBusy=true;$('zahnAdjustmentSubmit').disabled=true;
+ try{
+  if(!navigator.onLine||!invoiceCloud)throw Error('Connect to the internet and sign in to edit or return a bill.');
+  const {data:{user},error:authError}=await invoiceCloud.auth.getUser();
+  if(authError||!user)throw Error('Sign in to Cloud Backup first.');
+  let pending=zahnAdjustmentPending();
+  if(!pending){
+   if(!zahnAdjustmentTarget)throw Error('Choose an invoice first.');
+   const reason=$('zahnAdjustmentReason').value.trim();if(!reason)throw Error('Enter a reason.');
+   const payload={payment:$('zahnAdjustmentPayment').value};
+   if(zahnAdjustmentKind==='edit'){
+    const items=zahnAdjustmentItems(),discount=Number($('zahnAdjustmentDiscount').value||0);
+    if(!items.length||items.some(x=>!x.name||!Number.isFinite(x.ml)||x.ml<=0||!Number.isInteger(x.qty)||x.qty<=0||!Number.isFinite(x.price)||x.price<0))throw Error('Enter valid item names, ML, quantities and prices.');
+    const subtotal=money(items.reduce((s,x)=>s+x.qty*x.price,0));
+    if(!Number.isFinite(discount)||discount<0||discount>subtotal)throw Error('Discount must be between zero and the subtotal.');
+    Object.assign(payload,{items,discount:money(discount),customer:$('zahnAdjustmentCustomer').value.trim(),phone:$('zahnAdjustmentPhone').value.trim()});
+   }
+   if(!confirm(zahnAdjustmentKind==='edit'?'Save a corrected invoice and reverse '+zahnAdjustmentTarget.id+'?':'Return the full bill '+zahnAdjustmentTarget.id+' for '+fmt(zahnAdjustmentTarget.total)+'?'))return;
+   const original=zahnAdjustmentTarget;
+   const {error}=await invoiceCloud.from('zahn_invoice_records').upsert({id:original.id,owner_id:user.id,invoice_date:original.date,payload:original},{onConflict:'id',ignoreDuplicates:true});if(error)throw error;
+   pending={owner:user.id,request:crypto.randomUUID(),invoiceId:original.id,kind:zahnAdjustmentKind,reason,payload};
+   localStorage.setItem(zahnAdjustmentKey,JSON.stringify(pending));
+  }
+  if(pending.owner!==user.id)throw Error('Sign in with the account that started this change.');
+  $('zahnAdjustmentStatus').textContent='Saving change...';
+  const {data,error}=await invoiceCloud.rpc('zahn_adjust_invoice',{p_request_id:pending.request,p_invoice_id:pending.invoiceId,p_kind:pending.kind,p_reason:pending.reason,p_payload:pending.payload});
+  if(error){if(['P0001','22P02','22003','22007','23514'].includes(error.code))localStorage.removeItem(zahnAdjustmentKey);throw error}
+  if(!Array.isArray(data)||!data.length||data.some(x=>!x.id||x.operationRequestId!==pending.request))throw Error('Confirmation could not be verified. Retry the pending change.');
+  const invoices=load();for(const item of data)if(!invoices.some(x=>x.id===item.id))invoices.push(item);store(invoices);
+  localStorage.removeItem(zahnAdjustmentKey);$('zahnAdjustmentDialog').close();zahnScheduleSync();saved();report();
+  alert(pending.kind==='edit'?'Corrected invoice saved. Original invoice is kept in history.':'Full return saved. Sales and ML reports now include the deduction.');
+ }catch(e){$('zahnAdjustmentStatus').textContent=e.message||String(e);if(!$('zahnAdjustmentDialog').open)alert(e.message||String(e))}
+ finally{zahnAdjustmentBusy=false;$('zahnAdjustmentSubmit').disabled=false;zahnAdjustmentNotice()}
+}
+function zahnRetryAdjustment(){zahnSubmitAdjustment()}
+function zahnRenderSaved(){
+ zahnAdjustmentNotice();
+ const all=load().filter(x=>!zahnIsTestInvoice(x)),reversed=new Map(all.filter(zahnReturnRecord).map(x=>[x.originalInvoiceId,x]));
+ const container=$('savedList');container.innerHTML='';
+ for(const x of all.slice().reverse()){
+  const panel=document.createElement('div');panel.className='panel';
+  const reversal=reversed.get(x.id),status=zahnReturnRecord(x)?zahnInvoiceLabel(x):reversal?(reversal.adjustmentKind==='edit'?'REPLACED by '+reversal.replacementInvoiceId:'RETURNED'):'SALE';
+  panel.innerHTML='<b>'+esc(x.id)+'</b> · '+esc(x.date)+' · '+fmt(x.total)+' · '+esc(x.customer||'')+'<p><strong>'+esc(status)+'</strong></p>'+(zahnReturnRecord(x)||x.replacesInvoiceId?'<p>'+esc(zahnInvoiceNote(x))+'</p>':'');
+  for(const [label,fn] of [['Print / PDF',()=>printById(x.id)],['WhatsApp Text',()=>sendById(x.id)],['Share PDF',()=>pdfById(x.id)]]){
+   const button=document.createElement('button');button.textContent=label;button.onclick=fn;panel.appendChild(button);
+  }
+  if(!zahnReturnRecord(x)&&!reversal)for(const [label,kind] of [['Edit bill','edit'],['Return full bill','return']]){
+   const button=document.createElement('button');button.textContent=label;button.onclick=()=>zahnOpenAdjustment(x.id,kind);panel.appendChild(button);
+  }
+  container.appendChild(panel);
+ }
+ if(!all.length)container.textContent='No invoices saved';
+}
+
 function zahnShowTestArchive(){const a=load().filter(zahnIsTestInvoice);$('zahnTestArchive').innerHTML=a.map(x=>'<div class="panel"><b>TEST — '+esc(x.id)+'</b> · '+esc(x.date)+' · '+fmt(x.total)+'</div>').join('')||'No test bills on this device'}
 function printById(id){printInvoice(load().find(x=>x.id===id))}function sendById(id){whatsapp(load().find(x=>x.id===id))}
 function invoiceHtml(x){
  const amount=Number(x.total)||0,discount=Number(x.discount)||0,subtotal=Number(x.subtotal) || money(amount+discount);
  const items=(x.items||[]).map((i,n)=>'<tr><td>'+String(n+1).padStart(2,'0')+'</td><td><strong>'+esc(i.name)+'</strong></td><td>'+esc(i.ml)+' ml</td><td>'+esc(i.qty)+'</td><td>'+fmt(i.price)+'</td><td>'+fmt(Number(i.qty)*Number(i.price))+'</td></tr>').join('');
- return '<div class="invoice-paper"><div class="invoice-top"><div><img src="zahn-logo.webp" alt="ZAHN original logo" class="invoice-logo"></div><div class="invoice-heading"><strong>'+(zahnIsTestInvoice(x)?'TEST INVOICE':'INVOICE')+'</strong><span>'+esc(x.id)+'</span></div></div>'+
+ return '<div class="invoice-paper"><div class="invoice-top"><div><img src="zahn-logo.webp" alt="ZAHN original logo" class="invoice-logo"></div><div class="invoice-heading"><strong>'+(zahnInvoiceLabel(x))+'</strong><span>'+esc(x.id)+'</span></div></div>'+
  '<div class="invoice-meta"><div><span class="invoice-label">BILLED TO</span><strong>'+esc(x.customer||'Walk-in Customer')+'</strong><div>'+esc(x.phone||'No mobile provided')+'</div></div><div><span class="invoice-label">INVOICE DETAILS</span><div><b>Date:</b> '+esc(x.date)+'</div><div><b>Payment:</b> '+esc(x.payment)+'</div></div></div>'+
  '<div class="invoice-table-wrap"><table class="invoice-table"><thead><tr><th>#</th><th>Perfume</th><th>Size</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr></thead><tbody>'+items+'</tbody></table></div>'+
  '<div class="invoice-bottom"><div class="invoice-note">Thank you for shopping with ZAHN.<br>ESSENCE OF YOU</div><div class="invoice-totals"><div><span>Perfume Subtotal</span><b>'+fmt(subtotal)+'</b></div><div><span>Discount</span><b>− '+fmt(discount)+'</b></div><div class="invoice-grand"><span>GRAND TOTAL</span><b>'+fmt(amount)+'</b></div></div></div>'+
- '<div class="invoice-disclaimer">'+(zahnIsTestInvoice(x)?'TEST BILL — NOT A SALE':'Thank you for your purchase.')+'</div></div>';
+ '<div class="invoice-disclaimer">'+(esc(zahnInvoiceNote(x)))+'</div></div>';
 }
 function printInvoice(x){if(!x)return;$('invoicePrint').innerHTML=invoiceHtml(x);$('invoicePrint').classList.remove('hidden');setTimeout(()=>window.print(),150)}
 const invoiceCloud=window.supabase?.createClient('https://nzbhvsbgpavvuwxpjrun.supabase.co','sb_publishable_xKTwDW8nchBMnbCrvssBaA_Am8UAp7d');
@@ -111,7 +211,7 @@ async function whatsapp(x){
   const up=await invoiceCloud.storage.from('zahn-invoice-pdfs').upload(path,blob,{contentType:'application/pdf',upsert:false});
   if(up.error)throw up.error;
   const permanentPdfUrl='https://nzbhvsbgpavvuwxpjrun.supabase.co/functions/v1/zahn-invoice-view?file='+encodeURIComponent(path);
-  const message='ZAHN LUXURY PERFUMES\nInvoice: '+x.id+'\nDate: '+x.date+'\n'+x.items.map(i=>i.name+' '+i.ml+'ml ×'+i.qty+' = '+fmt(i.qty*i.price)).join('\n')+'\nDiscount: '+fmt(x.discount||0)+'\nTotal: '+fmt(x.total)+'\nView / Download PDF Invoice: '+permanentPdfUrl+'\n(Permanent invoice link — keep private)\nThank you!';
+  const message='ZAHN LUXURY PERFUMES\n'+zahnInvoiceLabel(x)+': '+x.id+'\n'+zahnInvoiceNote(x)+'\nDate: '+x.date+'\n'+x.items.map(i=>i.name+' '+i.ml+'ml ×'+i.qty+' = '+fmt(i.qty*i.price)).join('\n')+'\nDiscount: '+fmt(x.discount||0)+'\nTotal: '+fmt(x.total)+'\nView / Download PDF Invoice: '+permanentPdfUrl+'\n(Permanent invoice link — keep private)\nThank you!';
   const url='https://wa.me/'+phone+'?text='+encodeURIComponent(message);
   if(busy){busy.textContent='PDF link ready. ';const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open WhatsApp with PDF Link';busy.appendChild(a)}
   window.open(url,'_blank');
@@ -126,7 +226,7 @@ function buildPdf(x){
  const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),gold=[167,124,55],ink=[43,37,29],soft=[245,239,228];
  const text=(value,px,y,size=10,bold=false,align='left')=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(...ink);doc.text(String(value??''),px,y,{align})};
  const rule=y=>{doc.setDrawColor(216,199,166);doc.setLineWidth(.35);doc.line(16,y,194,y)};
- const pageHeader=()=>{doc.setFillColor(...gold);doc.rect(0,0,210,4,'F');doc.setTextColor(...gold);doc.setFont('helvetica','bold');doc.setFontSize(27);if(zahnLogoData){doc.addImage(zahnLogoData,'PNG',16,6,30,30)}else{doc.text('ZAHN',16,22);text('LUXURY PERFUMES  |  ESSENCE OF YOU',16,29,8)}text(zahnIsTestInvoice(x)?'TEST INVOICE':'INVOICE',194,20,17,true,'right');text(x.id,194,28,9,false,'right');rule(35)};
+ const pageHeader=()=>{doc.setFillColor(...gold);doc.rect(0,0,210,4,'F');doc.setTextColor(...gold);doc.setFont('helvetica','bold');doc.setFontSize(27);if(zahnLogoData){doc.addImage(zahnLogoData,'PNG',16,6,30,30)}else{doc.text('ZAHN',16,22);text('LUXURY PERFUMES  |  ESSENCE OF YOU',16,29,8)}text(zahnInvoiceLabel(x),194,20,17,true,'right');text(x.id,194,28,9,false,'right');rule(35)};
  pageHeader();
  text('BILLED TO',16,46,8,true);text(x.customer||'Walk-in Customer',16,53,11,true);
  text(x.phone||'No mobile provided',16,60,9);
@@ -153,7 +253,7 @@ function buildPdf(x){
  text('GRAND TOTAL',110,y+3,10,true);text('SAR '+amount.toFixed(2),190,y+3,13,true,'right');
  y+=23;text('Thank you for shopping with ZAHN!',16,y,10,true);
  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(125,116,102);
- doc.text(zahnIsTestInvoice(x)?'TEST BILL - NOT A SALE':'Thank you for your purchase.',16,285);
+ doc.text(zahnInvoiceNote(x).slice(0,115),16,285);
  return doc.output('blob');
 }
 async function sharePdf(x){
@@ -177,10 +277,10 @@ function paymentName(x){return ['Cash','Mada','Bank Transfer'].includes(x)?x:'Ot
 function salesSummary(invoices){
  const totals={'Cash':0,'Mada':0,'Bank Transfer':0,'Other':0};
  invoices.forEach(x=>{totals[paymentName(x.payment)]+=Number(x.total)||0});
- return {count:invoices.length,total:invoices.reduce((sum,x)=>sum+(Number(x.total)||0),0),totals};
+ return {count:invoices.length,saleCount:invoices.filter(x=>!zahnReturnRecord(x)).length,returnCount:invoices.filter(zahnReturnRecord).length,total:invoices.reduce((sum,x)=>sum+(Number(x.total)||0),0),totals};
 }
 function tiles(summary){
- const data=[['Invoices',summary.count],['Total Sales',fmt(summary.total)],['Cash',fmt(summary.totals.Cash)],['Mada',fmt(summary.totals.Mada)],['Bank Transfer',fmt(summary.totals['Bank Transfer'])]];
+ const data=[['Sales invoices',summary.saleCount],['Returns / reversals',summary.returnCount],['Net Sales',fmt(summary.total)],['Cash',fmt(summary.totals.Cash)],['Mada',fmt(summary.totals.Mada)],['Bank Transfer',fmt(summary.totals['Bank Transfer'])]];
  if(summary.totals.Other)data.push(['Other',fmt(summary.totals.Other)]);
  return '<div class="summary-grid">'+data.map(([label,value])=>'<div class="summary-tile">'+esc(label)+'<strong>'+esc(value)+'</strong></div>').join('')+'</div>';
 }
@@ -200,7 +300,7 @@ function report(){
  zahnMlReport();
  const a=filteredSales();if(!a){$('reportOutput').textContent='From Date must be before or equal to To Date.';return}
  const summary=salesSummary(a),closes=loadDayCloses();
- $('reportOutput').innerHTML=tiles(summary)+'<h3>Invoice Details</h3><div class="report-table"><table><thead><tr><th>Date</th><th>Invoice</th><th>Payment</th><th>Status</th><th>Total</th></tr></thead><tbody>'+a.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.id)+'</td><td>'+esc(paymentName(x.payment))+'</td><td>'+ (closes[x.date]?'Closed':'Open') +'</td><td>'+fmt(x.total)+'</td></tr>').join('')+'</tbody></table></div>'+(a.length?'':'<p>No invoices in selected dates.</p>');
+ $('reportOutput').innerHTML=tiles(summary)+'<h3>Invoice Details</h3><div class="report-table"><table><thead><tr><th>Date</th><th>Invoice</th><th>Payment</th><th>Status</th><th>Total</th></tr></thead><tbody>'+a.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.id)+'</td><td>'+esc(paymentName(x.payment))+'</td><td>'+ (zahnReturnRecord(x)?zahnInvoiceLabel(x)+' · ':'')+(closes[x.date]?'Closed':'Open') +'</td><td>'+fmt(x.total)+'</td></tr>').join('')+'</tbody></table></div>'+(a.length?'':'<p>No invoices in selected dates.</p>');
 }
 
 function zahnMlAllocate(amount,weights){
@@ -219,10 +319,11 @@ function zahnMlRows(invoices){
   if(!items.length||items.some(x=>!Number.isFinite(Number(x.ml))||Number(x.ml)<=0||!Number.isInteger(Number(x.qty))||Number(x.qty)<=0||!Number.isFinite(Number(x.price))||Number(x.price)<0)){skipped++;continue}
   const weights=items.map(x=>Number(x.qty)*Number(x.price));
   const gross=Math.round(weights.reduce((a,b)=>a+b,0)*100);
-  const net=Math.round(Number(inv.total)*100);
+  const sign=inv.reportSign===-1?-1:1;
+  const net=Math.round(Math.abs(Number(inv.total))*100);
   if(!Number.isFinite(net)||net<0||net>gross){skipped++;continue}
   const grossParts=zahnMlAllocate(gross,weights),discountParts=zahnMlAllocate(gross-net,grossParts);
-  items.forEach((x,i)=>result.push({date:inv.date,id:inv.id,name:x.name||'',ml:Number(x.ml),qty:Number(x.qty),volume:Number(x.ml)*Number(x.qty),gross:grossParts[i],discount:discountParts[i],net:grossParts[i]-discountParts[i]}));
+  items.forEach((x,i)=>result.push({date:inv.date,id:inv.id,name:x.name||'',ml:Number(x.ml),qty:sign*Number(x.qty),sold:sign>0?Number(x.qty):0,returned:sign<0?Number(x.qty):0,volume:sign*Number(x.ml)*Number(x.qty),gross:sign*grossParts[i],discount:sign*discountParts[i],net:sign*(grossParts[i]-discountParts[i])}));
  }
  return {rows:result,skipped};
 }
@@ -230,19 +331,24 @@ function zahnMlGroup(rows,period){
  const groups=new Map();
  for(const r of rows){
   const date=period==='month'?r.date.slice(0,7):period==='day'?r.date:'Selected dates';
-  const key=date+'|'+r.ml;
-  if(!groups.has(key))groups.set(key,{period:date,ml:r.ml,qty:0,volume:0,gross:0,discount:0,net:0,invoices:new Set()});
-  const g=groups.get(key);for(const k of ['qty','volume','gross','discount','net'])g[k]+=r[k];g.invoices.add(r.id);
+  const key=JSON.stringify([date,zahnPerfumeKey(r.name),r.ml]);
+  if(!groups.has(key))groups.set(key,{period:date,name:r.name,ml:r.ml,qty:0,sold:0,returned:0,volume:0,gross:0,discount:0,net:0,invoices:new Set()});
+  const g=groups.get(key);for(const k of ['qty','sold','returned','volume','gross','discount','net'])g[k]+=r[k];g.invoices.add(r.id);
  }
- return [...groups.values()].sort((a,b)=>a.period.localeCompare(b.period)||a.ml-b.ml);
+ return [...groups.values()].sort((a,b)=>a.period.localeCompare(b.period)||a.name.localeCompare(b.name,undefined,{numeric:true})||a.ml-b.ml);
 }
+function zahnPerfumeKey(name){const s=String(name||'').trim().replace(/\s+/g,' ').toLowerCase();const m=s.match(/^secret\s*0*(\d+)$/);return m?'secret '+Number(m[1]):s}
+function zahnPerfumeMatches(name,query){const q=zahnPerfumeKey(query),n=zahnPerfumeKey(name);return !q||(/^secret \d+$/.test(q)?n===q:n.includes(q))}
 function zahnMlSelection(){
  const invoices=filteredSales();if(!invoices)return null;
  const result=zahnMlRows(invoices),size=$('mlReportSize').value;
- return {...result,rows:result.rows.filter(r=>!size||r.ml===Number(size))};
+ return {...result,rows:result.rows.filter(r=>(!size||r.ml===Number(size))&&zahnPerfumeMatches(r.name,$('mlReportName').value))};
 }
 function zahnMlReport(){
  const selected=$('mlReportSize').value;
+ const names=new Set(Array.from({length:70},(_,i)=>'Secret '+String(i+1).padStart(2,'0')));
+ for(const inv of zahnSalesInvoices())for(const item of (Array.isArray(inv.items)?inv.items:[]))if(item.name)names.add(item.name);
+ $('mlReportNames').innerHTML=[...names].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(n=>'<option value="'+esc(n)+'"></option>').join('');
  const sizes=new Set([10,30,50,80,100]);
  for(const inv of zahnSalesInvoices())for(const item of (Array.isArray(inv.items)?inv.items:[])){const ml=Number(item.ml);if(Number.isFinite(ml)&&ml>0)sizes.add(ml)}
  $('mlReportSize').innerHTML='<option value="">All ML sizes</option>'+[...sizes].sort((a,b)=>a-b).map(ml=>'<option value="'+ml+'">'+ml+' ml</option>').join('');
@@ -251,25 +357,25 @@ function zahnMlReport(){
  if(!result){$('mlReportOutput').textContent='From Date must be before or equal to To Date.';return}
  const rows=result.rows,groups=zahnMlGroup(rows,$('mlReportPeriod').value);
  const qty=rows.reduce((s,r)=>s+r.qty,0),volume=rows.reduce((s,r)=>s+r.volume,0),net=rows.reduce((s,r)=>s+r.net,0),count=new Set(rows.map(r=>r.id)).size;
- $('mlReportOutput').innerHTML='<p class="status-note">'+esc($('from').value||'Beginning')+' to '+esc($('to').value||'Latest')+' · '+esc($('mlReportSize').value?$('mlReportSize').value+' ml':'All ML sizes')+'</p><div class="summary-grid"><div class="summary-tile">Matching invoices<strong>'+count+'</strong></div><div class="summary-tile">Bottles sold<strong>'+qty+'</strong></div><div class="summary-tile">Total volume<strong>'+volume+' ml</strong></div><div class="summary-tile">Net sales<strong>'+fmt(net/100)+'</strong></div></div>'+
- (groups.length?'<div class="report-table"><table><thead><tr><th>Period</th><th>Size</th><th>Bottles</th><th>Total ML</th><th>Before discount</th><th>Discount</th><th>Net sales</th></tr></thead><tbody>'+groups.map(g=>'<tr><td>'+esc(g.period)+'</td><td>'+g.ml+' ml</td><td>'+g.qty+'</td><td>'+g.volume+'</td><td>'+fmt(g.gross/100)+'</td><td>'+fmt(g.discount/100)+'</td><td>'+fmt(g.net/100)+'</td></tr>').join('')+'</tbody></table></div>':'<p>No sales for this ML size in the selected dates.</p>')+
+ $('mlReportOutput').innerHTML='<p class="status-note">'+esc($('from').value||'Beginning')+' to '+esc($('to').value||'Latest')+' · '+esc($('mlReportSize').value?$('mlReportSize').value+' ml':'All ML sizes')+' · '+esc($('mlReportName').value||'All perfumes')+'</p><div class="summary-grid"><div class="summary-tile">Matching records<strong>'+count+'</strong></div><div class="summary-tile">Net bottles<strong>'+qty+'</strong></div><div class="summary-tile">Net volume<strong>'+volume+' ml</strong></div><div class="summary-tile">Net sales<strong>'+fmt(net/100)+'</strong></div></div>'+
+ (groups.length?'<div class="report-table"><table><thead><tr><th>Period</th><th>Perfume</th><th>Size</th><th>Sold</th><th>Returned / reversed</th><th>Net bottles</th><th>Total ML</th><th>Before discount</th><th>Discount</th><th>Net sales</th></tr></thead><tbody>'+groups.map(g=>'<tr><td>'+esc(g.period)+'</td><td>'+esc(g.name)+'</td><td>'+g.ml+' ml</td><td>'+g.sold+'</td><td>'+g.returned+'</td><td>'+g.qty+'</td><td>'+g.volume+'</td><td>'+fmt(g.gross/100)+'</td><td>'+fmt(g.discount/100)+'</td><td>'+fmt(g.net/100)+'</td></tr>').join('')+'</tbody></table></div>':'<p>No sales or returns for this perfume and ML size in the selected dates.</p>')+
  (result.skipped?'<p role="status">'+result.skipped+' invoice(s) could not be included because item sizes, quantities or amounts are missing or inconsistent. Their original invoices are unchanged.</p>':'');
 }
 function zahnExportMlCsv(){
  const result=zahnMlSelection();if(!result)return alert('Invalid date range');
  const groups=zahnMlGroup(result.rows,$('mlReportPeriod').value);
  downloadCsv('ZAHN-ML-sales-'+($('mlReportSize').value||'all')+'ml-'+($('from').value||'start')+'-'+($('to').value||'latest')+'.csv',[
- ['From Date','To Date','ML Filter','Grouping','Excluded Invoices'],
- [$('from').value||'Beginning',$('to').value||'Latest',$('mlReportSize').value||'All',$('mlReportPeriod').value,result.skipped],
+ ['From Date','To Date','ML Filter','Grouping','Excluded Invoices','Perfume Filter'],
+ [$('from').value||'Beginning',$('to').value||'Latest',$('mlReportSize').value||'All',$('mlReportPeriod').value,result.skipped,$('mlReportName').value||'All'],
  [],
- ['Period','Size ML','Bottles Sold','Total ML','Before Discount SAR','Discount SAR','Net Sales SAR','Matching Invoices'],
- ...groups.map(g=>[g.period,g.ml,g.qty,g.volume,(g.gross/100).toFixed(2),(g.discount/100).toFixed(2),(g.net/100).toFixed(2),g.invoices.size])
+ ['Period','Perfume','Size ML','Sold','Returned or Reversed','Net Bottles','Net ML','Before Discount SAR','Discount SAR','Net Sales SAR','Matching Records'],
+ ...groups.map(g=>[g.period,g.name,g.ml,g.sold,g.returned,g.qty,g.volume,(g.gross/100).toFixed(2),(g.discount/100).toFixed(2),(g.net/100).toFixed(2),g.invoices.size])
  ]);
 }
 
 function csvEscape(v){const t=String(v??'');return /[",\r\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t}
 function downloadCsv(name,records){const content='\uFEFF'+records.map(row=>row.map(csvEscape).join(',')).join('\r\n');const blob=new Blob([content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
-function exportSalesCsv(){const a=filteredSales();if(!a){alert('Invalid date range');return}downloadCsv('ZAHN-sales-'+($('from').value||'all')+'-'+($('to').value||'all')+'.csv',[['Date','Invoice','Customer','Payment','Total SAR','Day Status'],...a.map(x=>[x.date,x.id,x.customer||'',paymentName(x.payment),Number(x.total||0).toFixed(2),loadDayCloses()[x.date]?'Closed':'Open'])])}
+function exportSalesCsv(){const a=filteredSales();if(!a){alert('Invalid date range');return}downloadCsv('ZAHN-sales-'+($('from').value||'all')+'-'+($('to').value||'all')+'.csv',[['Date','Invoice','Customer','Payment','Net SAR','Day Status','Record Type','Original Invoice'],...a.map(x=>[x.date,x.id,x.customer||'',paymentName(x.payment),Number(x.total||0).toFixed(2),loadDayCloses()[x.date]?'Closed':'Open',zahnInvoiceLabel(x),x.originalInvoiceId||x.replacesInvoiceId||''])])}
 function dayClose(){
  const d=$('closeDate').value;if(!d){$('closeOutput').textContent='Select a date.';return}
  const a=zahnSalesInvoices().filter(x=>x.date===d),summary=salesSummary(a),record=loadDayCloses()[d];
@@ -547,7 +653,7 @@ function zahnPinSetLocked(locked){
  document.documentElement.classList.toggle('zahn-pin-locked',locked);
  document.querySelector('main').inert=locked;document.querySelector('header').inert=locked;
  $('zahnPinGate').hidden=!locked;
- if(locked){if($('zahnPinSettings').open)$('zahnPinSettings').close();$('zahnPinSetupForm').reset();zahnPinSetupRecovery='';$('zahnPinRecoveryCode').textContent='';$('zahnPinEntry').value='';zahnPinRecovery=false;zahnPinGateLabels();setTimeout(()=>$('zahnPinEntry').focus(),0)}
+ if(locked){if($('zahnAdjustmentDialog')?.open)$('zahnAdjustmentDialog').close();if($('zahnPinSettings').open)$('zahnPinSettings').close();$('zahnPinSetupForm').reset();zahnPinSetupRecovery='';$('zahnPinRecoveryCode').textContent='';$('zahnPinEntry').value='';zahnPinRecovery=false;zahnPinGateLabels();setTimeout(()=>$('zahnPinEntry').focus(),0)}
  else zahnPinLastActive=Date.now();
 }
 function zahnPinGateLabels(){$('zahnPinEntry').type=zahnPinRecovery?'text':'password';$('zahnPinEntry').inputMode=zahnPinRecovery?'text':'numeric';$('zahnPinEntry').maxLength=zahnPinRecovery?64:6;$('zahnPinEntryLabel').textContent=zahnPinRecovery?'Recovery code':'Your PIN';$('zahnPinRecoveryToggle').textContent=zahnPinRecovery?'Use PIN':'Forgot PIN? Use recovery code';$('zahnPinUnlockButton').textContent=zahnPinRecovery?'Recover access':'Unlock';$('zahnPinEntry').value=''}
@@ -612,4 +718,16 @@ window.addEventListener('pageshow',()=>{if(document.documentElement.classList.co
 window.addEventListener('storage',e=>{if(e.key===zahnPinKey){try{zahnPinRefresh();if(zahnPinRead())zahnPinSetLocked(true);else zahnPinSetLocked(false)}catch(error){zahnPinSetLocked(true)}}});
 setInterval(zahnPinIdleCheck,10000);
 try{zahnPinRefresh();if(zahnPinRead())zahnPinSetLocked(true)}catch(e){zahnPinSetLocked(true);$('zahnPinGateStatus').textContent=e.message}
-</script></body></html>
+</script>
+<dialog id="zahnAdjustmentDialog" style="width: min(950px,95vw);max-height:90vh;overflow:auto;border:1px solid #b99659;border-radius:14px;background:#fff;color:#29241c">
+<h2 id="zahnAdjustmentTitle"></h2><p id="zahnAdjustmentOriginal"></p><p id="zahnAdjustmentHelp" class="muted"></p>
+<form onsubmit="event.preventDefault();window.zahnSubmitAdjustment(event)">
+<div id="zahnAdjustmentEditFields">
+<div class="grid"><div><label for="zahnAdjustmentCustomer">Customer</label><input id="zahnAdjustmentCustomer"></div><div><label for="zahnAdjustmentPhone">Phone</label><input id="zahnAdjustmentPhone"></div></div>
+<div id="zahnAdjustmentItems" oninput="zahnAdjustmentTotals()"></div><button type="button" onclick="zahnAddAdjustmentItem();zahnAdjustmentTotals()">Add item</button>
+<label for="zahnAdjustmentDiscount">Discount (SAR)</label><input id="zahnAdjustmentDiscount" type="number" min="0" step="0.01" oninput="zahnAdjustmentTotals()"><p id="zahnAdjustmentTotal"></p></div>
+<label id="zahnAdjustmentPaymentLabel" for="zahnAdjustmentPayment">Payment method</label><select id="zahnAdjustmentPayment"><option>Cash</option><option>Mada</option><option>Bank Transfer</option></select>
+<label for="zahnAdjustmentReason">Reason</label><input id="zahnAdjustmentReason" maxlength="1000" required>
+<p id="zahnAdjustmentStatus" role="status"></p><button id="zahnAdjustmentSubmit" class="primary" type="submit">Confirm</button> <button type="button" onclick="zahnCloseAdjustment()">Cancel</button>
+</form></dialog>
+</body></html>
